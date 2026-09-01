@@ -56,3 +56,7 @@ Em desenvolvimento.
 ## 🔒 Privacidade
 
 Os dados apresentados na versão pública do projeto são fictícios. Nenhuma informação financeira pessoal é disponibilizada neste repositório.
+
+## 👩‍💻 Desenvolvimento
+
+Projeto desenvolvido de forma colaborativa e utilizado como estudo prático de automação, programação e desenvolvimento de software.
