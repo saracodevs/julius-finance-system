@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f8fc;
+      color: #1f2937;
+    }
+
+    .app {
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 16px;
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: #eef2ff;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 21px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .subtitle {
+      margin-top: 3px;
+      color: #6b7280;
+      font-size: 11px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 5px;
+
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+
+      padding: 5px;
+
+      border-radius: 10px;
+
+      margin-bottom: 12px;
+    }
+
+    .tab {
+      flex: 1;
+
+      border: none;
+      background: transparent;
+
+      padding: 9px 6px;
+
+      border-radius: 7px;
+
+      cursor: pointer;
+
+      color: #6b7280;
+
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tab.ativo {
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .painel {
+      display: none;
+    }
+
+    .painel.ativo {
+      display: block;
+    }
+
+    .card {
+      background: #ffffff;
+
+      border: 1px solid #e5e7eb;
+
+      border-radius: 11px;
+
+      padding: 14px;
+    }
+
+    .tituloSecao {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .ajuda {
+      color: #6b7280;
+      font-size: 11px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .lista {
+      max-height: 320px;
+      overflow-y: auto;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 7px;
+    }
+
+    .linha {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .linha input {
+      flex: 1;
+    }
+
+    input,
+    select {
+      min-height: 36px;
+
+      border: 1px solid #d1d5db;
+
+      border-radius: 7px;
+
+      padding: 7px 9px;
+
+      background: #fff;
+
+      font-size: 12px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #6366f1;
+
+      box-shadow:
+        0 0 0 2px
+        rgba(99,102,241,.12);
+    }
+
+    .tipo {
+      width: 180px;
+    }
+
+    button {
+      border: none;
+      border-radius: 7px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    .remover {
+      width: 35px;
+      height: 35px;
+
+      padding: 0;
+
+      background: #fee2e2;
+      color: #b91c1c;
+
+      font-size: 17px;
+    }
+
+    .adicionar {
+      width: 100%;
+
+      margin-top: 9px;
+
+      padding: 9px;
+
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin-top: 14px;
+    }
+
+    .footerButtons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .cancelar {
+      padding: 9px 13px;
+
+      background: #fff;
+      color: #374151;
+
+      border: 1px solid #d1d5db;
+    }
+
+    .salvar {
+      padding: 9px 14px;
+
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .mensagem {
+      display: none;
+
+      font-size: 11px;
+
+      padding: 8px 10px;
+
+      border-radius: 7px;
+    }
+
+    .mensagem.erro {
+      display: block;
+
+      background: #fef2f2;
+      color: #b91c1c;
+
+      border: 1px solid #fecaca;
+    }
+
+    .mensagem.sucesso {
+      display: block;
+
+      background: #ecfdf5;
+      color: #047857;
+
+      border: 1px solid #a7f3d0;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+  <div class="header">
+
+    <div class="icon">
+      ⚙️
+    </div>
+
+    <div>
+
+      <h2>
+        Configurações
+      </h2>
+
+      <div class="subtitle">
+        Personalize este controle financeiro.
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="tabs">
+
+    <button
+      class="tab ativo"
+      onclick="abrirTab('responsaveis', this)"
+    >
+      👥 Responsáveis
+    </button>
+
+    <button
+      class="tab"
+      onclick="abrirTab('categorias', this)"
+    >
+      🏷️ Categorias
+    </button>
+
+    <button
+      class="tab"
+      onclick="abrirTab('cartoes', this)"
+    >
+      💳 Cartões
+    </button>
+
+    <button
+      class="tab"
+      onclick="abrirTab('formas', this)"
+    >
+      💰 Formas
+    </button>
+
+  </div>
+
+
+  <!-- ===================================================
+       RESPONSÁVEIS
+  ==================================================== -->
+
+  <div
+    id="painel-responsaveis"
+    class="painel ativo"
+  >
+
+    <div class="card">
+
+      <div class="tituloSecao">
+        Responsáveis
+      </div>
+
+      <div class="ajuda">
+
+        Cadastre quem participa do controle.
+
+        <strong>Principal</strong>
+        entra normalmente nos cálculos financeiros.
+
+        <strong>Terceiro / Reembolso</strong>
+        será usado para valores que não pertencem
+        ao orçamento principal.
+
+      </div>
+
+
+      <div
+        id="listaResponsaveis"
+        class="lista"
+      >
+      </div>
+
+
+      <button
+        class="adicionar"
+        onclick="adicionarResponsavel()"
+      >
+        + Adicionar responsável
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       CATEGORIAS
+  ==================================================== -->
+
+  <div
+    id="painel-categorias"
+    class="painel"
+  >
+
+    <div class="card">
+
+      <div class="tituloSecao">
+        Categorias
+      </div>
+
+      <div class="ajuda">
+        Essas opções serão usadas nos lançamentos
+        e na importação de faturas.
+      </div>
+
+
+      <div
+        id="listaCategorias"
+        class="lista"
+      >
+      </div>
+
+
+      <button
+        class="adicionar"
+        onclick="
+          adicionarItem(
+            'listaCategorias'
+          )
+        "
+      >
+        + Adicionar categoria
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       CARTÕES
+  ==================================================== -->
+
+  <div
+    id="painel-cartoes"
+    class="painel"
+  >
+
+    <div class="card">
+
+      <div class="tituloSecao">
+        Cartões
+      </div>
+
+      <div class="ajuda">
+        Cadastre os cartões ou instituições
+        utilizados neste controle.
+      </div>
+
+
+      <div
+        id="listaCartoes"
+        class="lista"
+      >
+      </div>
+
+
+      <button
+        class="adicionar"
+        onclick="
+          adicionarItem(
+            'listaCartoes'
+          )
+        "
+      >
+        + Adicionar cartão
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       FORMAS
+  ==================================================== -->
+
+  <div
+    id="painel-formas"
+    class="painel"
+  >
+
+    <div class="card">
+
+      <div class="tituloSecao">
+        Formas de pagamento
+      </div>
+
+      <div class="ajuda">
+        Ex.: Crédito, Débito, PIX, Dinheiro.
+      </div>
+
+
+      <div
+        id="listaFormas"
+        class="lista"
+      >
+      </div>
+
+
+      <button
+        class="adicionar"
+        onclick="
+          adicionarItem(
+            'listaFormas'
+          )
+        "
+      >
+        + Adicionar forma
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="footer">
+
+    <div
+      id="mensagem"
+      class="mensagem"
+    >
+    </div>
+
+
+    <div class="footerButtons">
+
+      <button
+        class="cancelar"
+        onclick="google.script.host.close()"
+      >
+        Cancelar
+      </button>
+
+
+      <button
+        class="salvar"
+        id="btnSalvar"
+        onclick="salvar()"
+      >
+        Salvar configurações
+      </button>
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+  /* =====================================================
+     CARREGAR
+  ===================================================== */
+
+  window.onload =
+    function () {
+
+
+      google.script.run
+
+        .withSuccessHandler(
+
+          function (config) {
+
+
+            (
+              config.responsaveis ||
+              []
+            )
+            .forEach(
+              item =>
+                adicionarResponsavel(
+                  item.nome,
+                  item.tipo
+                )
+            );
+
+
+            (
+              config.categorias ||
+              []
+            )
+            .forEach(
+              valor =>
+                adicionarItem(
+                  'listaCategorias',
+                  valor
+                )
+            );
+
+
+            (
+              config.cartoes ||
+              []
+            )
+            .forEach(
+              valor =>
+                adicionarItem(
+                  'listaCartoes',
+                  valor
+                )
+            );
+
+
+            (
+              config.formas ||
+              []
+            )
+            .forEach(
+              valor =>
+                adicionarItem(
+                  'listaFormas',
+                  valor
+                )
+            );
+
+
+            if (
+              !config.responsaveis.length
+            ) {
+
+              adicionarResponsavel();
+            }
+
+          }
+
+        )
+
+        .withFailureHandler(
+
+          function (erro) {
+
+            mostrarErro(
+              erro.message ||
+              String(erro)
+            );
+
+          }
+
+        )
+
+        .obterConfiguracoesSistema();
+
+    };
+
+
+  /* =====================================================
+     ABAS
+  ===================================================== */
+
+  function abrirTab(
+    nome,
+    botao
+  ) {
+
+
+    document
+      .querySelectorAll(
+        '.painel'
+      )
+      .forEach(
+        painel =>
+          painel.classList.remove(
+            'ativo'
+          )
+      );
+
+
+    document
+      .querySelectorAll(
+        '.tab'
+      )
+      .forEach(
+        tab =>
+          tab.classList.remove(
+            'ativo'
+          )
+      );
+
+
+    document
+      .getElementById(
+        'painel-' +
+        nome
+      )
+      .classList.add(
+        'ativo'
+      );
+
+
+    botao
+      .classList.add(
+        'ativo'
+      );
+
+  }
+
+
+  /* =====================================================
+     RESPONSÁVEIS
+  ===================================================== */
+
+  function adicionarResponsavel(
+    nome = '',
+    tipo = ''
+  ) {
+
+
+    const lista =
+      document.getElementById(
+        'listaResponsaveis'
+      );
+
+
+    const linha =
+      document.createElement(
+        'div'
+      );
+
+
+    linha.className =
+      'linha responsavelLinha';
+
+
+    const input =
+      document.createElement(
+        'input'
+      );
+
+
+    input.className =
+      'nomeResponsavel';
+
+
+    input.placeholder =
+      'Nome do responsável';
+
+
+    input.value =
+      nome;
+
+
+    const select =
+      document.createElement(
+        'select'
+      );
+
+
+    select.className =
+      'tipo tipoResponsavel';
+
+
+    select.innerHTML = `
+
+      <option value="">
+        Selecione o tipo
+      </option>
+
+      <option value="Principal">
+        Principal
+      </option>
+
+      <option value="Terceiro / Reembolso">
+        Terceiro / Reembolso
+      </option>
+
+    `;
+
+
+    select.value =
+      tipo;
+
+
+    const remover =
+      criarBotaoRemover(
+        linha
+      );
+
+
+    linha.appendChild(
+      input
+    );
+
+
+    linha.appendChild(
+      select
+    );
+
+
+    linha.appendChild(
+      remover
+    );
+
+
+    lista.appendChild(
+      linha
+    );
+
+  }
+
+
+  /* =====================================================
+     LISTAS SIMPLES
+  ===================================================== */
+
+  function adicionarItem(
+    listaId,
+    valor = ''
+  ) {
+
+
+    const lista =
+      document.getElementById(
+        listaId
+      );
+
+
+    const linha =
+      document.createElement(
+        'div'
+      );
+
+
+    linha.className =
+      'linha itemLinha';
+
+
+    const input =
+      document.createElement(
+        'input'
+      );
+
+
+    input.className =
+      'itemInput';
+
+
+    input.value =
+      valor;
+
+
+    const remover =
+      criarBotaoRemover(
+        linha
+      );
+
+
+    linha.appendChild(
+      input
+    );
+
+
+    linha.appendChild(
+      remover
+    );
+
+
+    lista.appendChild(
+      linha
+    );
+
+  }
+
+
+  function criarBotaoRemover(
+    linha
+  ) {
+
+
+    const botao =
+      document.createElement(
+        'button'
+      );
+
+
+    botao.className =
+      'remover';
+
+
+    botao.textContent =
+      '×';
+
+
+    botao.onclick =
+      function () {
+
+        linha.remove();
+
+      };
+
+
+    return botao;
+
+  }
+
+
+  /* =====================================================
+     SALVAR
+  ===================================================== */
+
+  function salvar() {
+
+
+    limparMensagem();
+
+
+    const responsaveis =
+      Array
+        .from(
+          document.querySelectorAll(
+            '.responsavelLinha'
+          )
+        )
+        .map(
+          linha => ({
+
+            nome:
+              linha
+                .querySelector(
+                  '.nomeResponsavel'
+                )
+                .value
+                .trim(),
+
+            tipo:
+              linha
+                .querySelector(
+                  '.tipoResponsavel'
+                )
+                .value
+
+          })
+        )
+        .filter(
+          item =>
+            item.nome
+        );
+
+
+    const categorias =
+      obterItens(
+        'listaCategorias'
+      );
+
+
+    const cartoes =
+      obterItens(
+        'listaCartoes'
+      );
+
+
+    const formas =
+      obterItens(
+        'listaFormas'
+      );
+
+
+    const botao =
+      document.getElementById(
+        'btnSalvar'
+      );
+
+
+    botao.disabled =
+      true;
+
+
+    botao.textContent =
+      'Salvando...';
+
+
+    google.script.run
+
+      .withSuccessHandler(
+
+        function () {
+
+
+          botao.disabled =
+            false;
+
+
+          botao.textContent =
+            'Salvar configurações';
+
+
+          mostrarSucesso(
+            'Configurações atualizadas com sucesso.'
+          );
+
+
+          setTimeout(
+
+            function () {
+
+              google.script.host.close();
+
+            },
+
+            700
+
+          );
+
+        }
+
+      )
+
+      .withFailureHandler(
+
+        function (erro) {
+
+
+          botao.disabled =
+            false;
+
+
+          botao.textContent =
+            'Salvar configurações';
+
+
+          mostrarErro(
+            erro.message ||
+            String(erro)
+          );
+
+        }
+
+      )
+
+      .salvarConfiguracoesSistema({
+
+        responsaveis,
+        categorias,
+        cartoes,
+        formas
+
+      });
+
+  }
+
+
+  function obterItens(
+    listaId
+  ) {
+
+
+    return Array
+      .from(
+        document
+          .getElementById(
+            listaId
+          )
+          .querySelectorAll(
+            '.itemInput'
+          )
+      )
+      .map(
+        input =>
+          input.value.trim()
+      )
+      .filter(Boolean);
+
+  }
+
+
+  /* =====================================================
+     MENSAGENS
+  ===================================================== */
+
+  function mostrarErro(
+    texto
+  ) {
+
+
+    const mensagem =
+      document.getElementById(
+        'mensagem'
+      );
+
+
+    mensagem.className =
+      'mensagem erro';
+
+
+    mensagem.textContent =
+      texto;
+
+  }
+
+
+  function mostrarSucesso(
+    texto
+  ) {
+
+
+    const mensagem =
+      document.getElementById(
+        'mensagem'
+      );
+
+
+    mensagem.className =
+      'mensagem sucesso';
+
+
+    mensagem.textContent =
+      texto;
+
+  }
+
+
+  function limparMensagem() {
+
+
+    const mensagem =
+      document.getElementById(
+        'mensagem'
+      );
+
+
+    mensagem.className =
+      'mensagem';
+
+
+    mensagem.textContent =
+      '';
+
+  }
+
+
+</script>
+
+</body>
+
+</html>

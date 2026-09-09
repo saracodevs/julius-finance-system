@@ -1,0 +1,3247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <style>
+
+    /* =====================================================
+       BASE
+    ===================================================== */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background: #f7f8fc;
+      color: #1f2937;
+
+      font-size: 12px;
+
+      overflow: hidden;
+    }
+
+
+    .app {
+      height: 100vh;
+
+      display: flex;
+      flex-direction: column;
+
+      background: #f7f8fc;
+    }
+
+
+    /* =====================================================
+       CABEÇALHO
+    ===================================================== */
+
+    .header {
+      padding: 13px 20px 11px;
+
+      background: #ffffff;
+
+      border-bottom:
+        1px solid #e5e7eb;
+
+      flex-shrink: 0;
+    }
+
+
+    .headerTop {
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+    }
+
+
+    .headerIcon {
+      width: 36px;
+      height: 36px;
+
+      border-radius: 10px;
+
+      background: #eef2ff;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 19px;
+    }
+
+
+    .header h1 {
+      margin: 0;
+
+      font-size: 19px;
+      line-height: 1.15;
+
+      color: #111827;
+    }
+
+
+    .subtitle {
+      margin-top: 3px;
+
+      color: #6b7280;
+
+      font-size: 11px;
+    }
+
+
+    /* =====================================================
+       CONTEÚDO
+    ===================================================== */
+
+    .conteudo {
+      flex: 1;
+
+      overflow-y: auto;
+
+      padding: 12px 20px 10px;
+    }
+
+
+    .card {
+      background: #ffffff;
+
+      border:
+        1px solid #e5e7eb;
+
+      border-radius: 11px;
+
+      padding: 11px 12px;
+
+      margin-bottom: 11px;
+    }
+
+
+    .cardTitle {
+      font-weight: 700;
+
+      font-size: 12px;
+
+      color: #374151;
+
+      margin-bottom: 8px;
+    }
+
+
+    /* =====================================================
+       UPLOAD
+    ===================================================== */
+
+    .uploadRow {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+
+      flex-wrap: nowrap;
+    }
+
+
+    input[type="file"] {
+      flex: 1;
+
+      min-width: 300px;
+
+      border:
+        1px solid #d1d5db;
+
+      border-radius: 7px;
+
+      padding: 5px 7px;
+
+      background: #fff;
+
+      min-height: 32px;
+    }
+
+
+    /* =====================================================
+       BOTÕES
+    ===================================================== */
+
+    button {
+      border: none;
+
+      border-radius: 7px;
+
+      padding: 8px 13px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      transition:
+        0.15s ease;
+
+      white-space: nowrap;
+    }
+
+
+    button:disabled {
+      opacity: 0.55;
+
+      cursor: default;
+    }
+
+
+    .btnPrimary {
+      background: #2563eb;
+
+      color: #ffffff;
+    }
+
+
+    .btnPrimary:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+
+
+    .btnSecondary {
+      background: #ffffff;
+
+      color: #374151;
+
+      border:
+        1px solid #d1d5db;
+    }
+
+
+    .btnSecondary:hover:not(:disabled) {
+      background: #f9fafb;
+    }
+
+
+    .btnPurple {
+      background: #ede9fe;
+
+      color: #6d28d9;
+
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+
+
+    .btnPurple:hover:not(:disabled) {
+      background: #ddd6fe;
+    }
+
+
+    /* =====================================================
+       MENSAGENS
+    ===================================================== */
+
+    .mensagem {
+      display: none;
+
+      margin-top: 8px;
+
+      padding: 8px 10px;
+
+      border-radius: 7px;
+
+      font-size: 11px;
+    }
+
+
+    .mensagem.erro {
+      display: block;
+
+      background: #fef2f2;
+
+      color: #b91c1c;
+
+      border:
+        1px solid #fecaca;
+    }
+
+
+    .mensagem.sucesso {
+      display: block;
+
+      background: #ecfdf5;
+
+      color: #047857;
+
+      border:
+        1px solid #a7f3d0;
+    }
+
+
+    .mensagem.info {
+      display: block;
+
+      background: #eff6ff;
+
+      color: #1d4ed8;
+
+      border:
+        1px solid #bfdbfe;
+    }
+
+
+    /* =====================================================
+       RESULTADO
+    ===================================================== */
+
+    #resultadoArea {
+      display: none;
+    }
+
+
+    .resumo {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 14px;
+
+      flex-wrap: wrap;
+
+      margin-bottom: 9px;
+    }
+
+
+    .resumoBanco {
+      display: flex;
+
+      align-items: center;
+
+      gap: 7px;
+    }
+
+
+    .bancoNome {
+      font-size: 15px;
+
+      font-weight: 700;
+
+      color: #111827;
+    }
+
+
+    .contador {
+      color: #6b7280;
+
+      font-size: 11px;
+    }
+
+
+    .campoInline {
+      display: flex;
+
+      align-items: center;
+
+      gap: 6px;
+    }
+
+
+    .campoInline label {
+      color: #4b5563;
+
+      font-weight: 600;
+
+      font-size: 11px;
+    }
+
+
+    select,
+    input[type="date"],
+    input[type="text"] {
+      border:
+        1px solid #d1d5db;
+
+      border-radius: 7px;
+
+      min-height: 31px;
+
+      padding: 5px 8px;
+
+      background: #fff;
+
+      color: #111827;
+
+      font-size: 11px;
+    }
+
+
+    select:focus,
+    input:focus {
+      outline: none;
+
+      border-color: #6366f1;
+
+      box-shadow:
+        0 0 0 2px rgba(
+          99,
+          102,
+          241,
+          0.12
+        );
+    }
+
+
+    /* =====================================================
+       AÇÕES EM MASSA
+    ===================================================== */
+
+    .acoesMassa {
+      display: flex;
+
+      gap: 8px;
+
+      align-items: end;
+
+      flex-wrap: nowrap;
+
+      background: #f8fafc;
+
+      border:
+        1px solid #e5e7eb;
+
+      padding: 9px 10px;
+
+      border-radius: 9px;
+
+      margin-bottom: 9px;
+    }
+
+
+    .grupoCampo {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 4px;
+    }
+
+
+    .grupoCampo label {
+      font-size: 9px;
+
+      color: #6b7280;
+
+      font-weight: 700;
+
+      text-transform: uppercase;
+
+      letter-spacing: .04em;
+    }
+
+
+    .grupoCampo select,
+    .grupoCampo input {
+      min-width: 145px;
+    }
+
+
+    #dataMassa {
+      width: 145px;
+    }
+
+
+    #categoriaMassa {
+      width: 155px;
+    }
+
+
+    #responsavelMassa {
+      width: 150px;
+    }
+
+
+    /* =====================================================
+       TABELA
+    ===================================================== */
+
+    .tableWrapper {
+      width: 100%;
+
+      max-height: 485px;
+
+      overflow-x: auto;
+      overflow-y: auto;
+
+      border:
+        1px solid #e5e7eb;
+
+      border-radius: 9px;
+
+      background: #ffffff;
+
+      scrollbar-gutter: stable;
+    }
+
+
+    table {
+      width: 100%;
+
+      min-width: 1160px;
+
+      border-collapse: collapse;
+
+      table-layout: fixed;
+    }
+
+
+    thead th {
+      position: sticky;
+
+      top: 0;
+
+      z-index: 5;
+
+      background: #f3f4f6;
+
+      color: #374151;
+
+      font-size: 9px;
+
+      font-weight: 700;
+
+      text-align: left;
+
+      padding: 7px 6px;
+
+      border-bottom:
+        1px solid #d1d5db;
+
+      white-space: nowrap;
+    }
+
+
+    tbody td {
+      padding: 6px;
+
+      border-bottom:
+        1px solid #edf0f3;
+
+      vertical-align: middle;
+
+      overflow: hidden;
+    }
+
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+
+    tbody tr.naoSelecionada {
+      opacity: 0.72;
+    }
+
+
+    tbody tr.statusParcelado {
+      background: #fffbeb;
+    }
+
+
+    tbody tr.statusPagamento {
+      background: #f9fafb;
+    }
+
+
+    tbody tr.statusCredito {
+      background: #eff6ff;
+    }
+
+
+    /* =====================================================
+       LARGURA DAS COLUNAS
+    ===================================================== */
+
+    .colCheck {
+      width: 34px;
+
+      text-align: center;
+    }
+
+
+    .colStatus {
+      width: 83px;
+    }
+
+
+    .colData {
+      width: 100px;
+    }
+
+
+    .colDescricaoPdf {
+      width: 180px;
+    }
+
+
+    .colDescricao {
+      width: 190px;
+    }
+
+
+    .colCategoria {
+      width: 145px;
+    }
+
+
+    .colResponsavel {
+      width: 135px;
+    }
+
+
+    .colForma {
+      width: 105px;
+    }
+
+
+    .colValor {
+      width: 90px;
+
+      text-align: right;
+
+      white-space: nowrap;
+
+      font-weight: 700;
+    }
+
+
+    /* =====================================================
+       DESCRIÇÕES
+    ===================================================== */
+
+    .descricaoOriginal {
+      font-size: 10px;
+
+      line-height: 1.2;
+
+      color: #374151;
+
+      white-space: normal;
+
+      overflow-wrap: anywhere;
+    }
+
+
+    .finalCartao {
+      font-size: 9px;
+
+      color: #9ca3af;
+
+      margin-top: 2px;
+    }
+
+
+    .linhaInput {
+      width: 100%;
+
+      min-width: 0;
+    }
+
+
+    /* =====================================================
+       BADGES
+    ===================================================== */
+
+    .badge {
+      display: inline-flex;
+
+      align-items: center;
+
+      border-radius: 999px;
+
+      font-size: 8px;
+
+      font-weight: 800;
+
+      padding: 3px 6px;
+
+      white-space: nowrap;
+
+      text-transform: uppercase;
+    }
+
+
+    .badgeCompra {
+      background: #dcfce7;
+
+      color: #166534;
+    }
+
+
+    .badgeParcelado {
+      background: #fef3c7;
+
+      color: #92400e;
+    }
+
+
+    .badgePagamento {
+      background: #e5e7eb;
+
+      color: #4b5563;
+    }
+
+
+    .badgeCredito {
+      background: #dbeafe;
+
+      color: #1e40af;
+    }
+
+
+    /* =====================================================
+       RODAPÉ
+    ===================================================== */
+
+    .footer {
+      flex-shrink: 0;
+
+      background: #ffffff;
+
+      border-top:
+        1px solid #e5e7eb;
+
+      padding: 10px 20px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 12px;
+    }
+
+
+    .footerInfo {
+      color: #6b7280;
+
+      font-size: 10px;
+    }
+
+
+    .footerInfo strong {
+      color: #111827;
+    }
+
+
+    .footerActions {
+      display: flex;
+
+      gap: 7px;
+    }
+
+
+    /* =====================================================
+       LOADING
+    ===================================================== */
+
+    .loading {
+      display: none;
+
+      align-items: center;
+
+      gap: 7px;
+
+      color: #4b5563;
+
+      font-size: 11px;
+    }
+
+
+    .spinner {
+      width: 15px;
+
+      height: 15px;
+
+      border:
+        2px solid #d1d5db;
+
+      border-top-color:
+        #2563eb;
+
+      border-radius: 50%;
+
+      animation:
+        girar .7s linear infinite;
+    }
+
+
+    @keyframes girar {
+
+      to {
+        transform:
+          rotate(360deg);
+      }
+    }
+
+
+    /* =====================================================
+       TELAS MENORES
+    ===================================================== */
+
+    @media (
+      max-width: 1150px
+    ) {
+
+      .conteudo {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+
+      .header {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+
+      .footer {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+
+      .acoesMassa {
+        flex-wrap: wrap;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+  <!-- =====================================================
+       CABEÇALHO
+  ====================================================== -->
+
+  <div class="header">
+
+    <div class="headerTop">
+
+      <div class="headerIcon">
+        📄
+      </div>
+
+
+      <div>
+
+        <h1>
+          Importar fatura
+        </h1>
+
+
+        <div class="subtitle">
+          Revise as movimentações antes de enviar para suas despesas.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       CONTEÚDO
+  ====================================================== -->
+
+  <div class="conteudo">
+
+
+    <!-- ===================================================
+         UPLOAD
+    ==================================================== -->
+
+    <div class="card">
+
+      <div class="cardTitle">
+        1. Selecione a fatura
+      </div>
+
+
+      <div class="uploadRow">
+
+        <input
+          type="file"
+          id="arquivo"
+          accept=".pdf,application/pdf"
+        >
+
+
+        <button
+          class="btnPrimary"
+          id="btnLer"
+          onclick="lerFatura()"
+        >
+          Ler fatura
+        </button>
+
+
+        <div
+          class="loading"
+          id="loadingLeitura"
+        >
+
+          <div class="spinner">
+          </div>
+
+          Analisando PDF...
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="mensagemTopo"
+        class="mensagem"
+      >
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         RESULTADO
+    ==================================================== -->
+
+    <div id="resultadoArea">
+
+
+      <div class="card">
+
+
+        <!-- ===============================================
+             CABEÇALHO DA FATURA
+        ================================================ -->
+
+        <div class="resumo">
+
+
+          <div class="resumoBanco">
+
+            <div
+              class="bancoNome"
+              id="nomeBanco"
+            >
+              Banco
+            </div>
+
+
+            <div
+              class="contador"
+              id="contadorMovimentacoes"
+            >
+              0 movimentações
+            </div>
+
+          </div>
+
+
+          <div class="campoInline">
+
+            <label>
+              Cartão:
+            </label>
+
+
+            <select id="cartao">
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             AÇÕES EM MASSA
+        ================================================ -->
+
+        <div class="acoesMassa">
+
+
+          <div class="grupoCampo">
+
+            <label>
+              Nova data
+            </label>
+
+
+            <input
+              type="date"
+              id="dataMassa"
+            >
+
+          </div>
+
+
+          <div class="grupoCampo">
+
+            <label>
+              Categoria
+            </label>
+
+
+            <select id="categoriaMassa">
+
+              <option value="">
+                Não alterar
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="grupoCampo">
+
+            <label>
+              Responsável
+            </label>
+
+
+            <select id="responsavelMassa">
+
+              <option value="">
+                Não alterar
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <button
+            class="btnPurple"
+            onclick="aplicarEmMassa()"
+          >
+            Aplicar aos selecionados
+          </button>
+
+        </div>
+
+
+        <!-- ===============================================
+             TABELA
+        ================================================ -->
+
+        <div class="tableWrapper">
+
+
+          <table>
+
+
+            <thead>
+
+              <tr>
+
+                <th class="colCheck">
+
+                  <input
+                    type="checkbox"
+                    id="marcarTodos"
+                    onchange="
+                      alternarTodos(
+                        this.checked
+                      )
+                    "
+                  >
+
+                </th>
+
+
+                <th class="colStatus">
+                  Status
+                </th>
+
+
+                <th class="colData">
+                  Data original
+                </th>
+
+
+                <th class="colData">
+                  Data controle
+                </th>
+
+
+                <th class="colDescricaoPdf">
+                  Descrição PDF
+                </th>
+
+
+                <th class="colDescricao">
+                  Descrição
+                </th>
+
+
+                <th class="colCategoria">
+                  Categoria
+                </th>
+
+
+                <th class="colResponsavel">
+                  Responsável
+                </th>
+
+
+                <th class="colForma">
+                  Forma
+                </th>
+
+
+                <th class="colValor">
+                  Valor
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody id="corpoTabela">
+            </tbody>
+
+
+          </table>
+
+
+        </div>
+
+
+        <div
+          id="mensagemResultado"
+          class="mensagem"
+        >
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <!-- =====================================================
+       RODAPÉ
+  ====================================================== -->
+
+  <div class="footer">
+
+
+    <div class="footerInfo">
+
+      <span id="resumoSelecao">
+        Nenhuma fatura carregada.
+      </span>
+
+    </div>
+
+
+    <div class="footerActions">
+
+
+      <button
+        class="btnSecondary"
+        onclick="
+          google.script.host.close()
+        "
+      >
+        Cancelar
+      </button>
+
+
+      <button
+        class="btnPrimary"
+        id="btnImportar"
+        onclick="
+          importarSelecionados()
+        "
+        disabled
+      >
+        Importar selecionados
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+  /* =====================================================
+     ESTADO
+  ===================================================== */
+
+  let opcoes = {
+
+    categorias: [],
+
+    formas: [],
+
+    cartoes: [],
+
+    responsaveis: [],
+
+    competencia: ''
+
+  };
+
+
+  let transacoes = [];
+
+
+  /* =====================================================
+     INICIALIZAÇÃO
+  ===================================================== */
+
+  window.onload =
+    function () {
+
+
+      google.script.run
+
+        .withSuccessHandler(
+
+          function (dados) {
+
+
+            opcoes =
+              dados ||
+              opcoes;
+
+
+            preencherSelectsFixos();
+
+
+            if (
+              opcoes.competencia
+            ) {
+
+              document
+                .getElementById(
+                  'dataMassa'
+                )
+                .value =
+                  opcoes.competencia;
+
+            }
+
+          }
+
+        )
+
+        .withFailureHandler(
+
+          function (erro) {
+
+
+            mostrarMensagem(
+
+              'mensagemTopo',
+
+              erro.message ||
+              String(erro),
+
+              'erro'
+
+            );
+
+          }
+
+        )
+
+        .obterOpcoesImportador();
+
+    };
+
+
+  /* =====================================================
+     SELECTS FIXOS
+  ===================================================== */
+
+  function preencherSelectsFixos() {
+
+
+    preencherSelect(
+
+      document.getElementById(
+        'cartao'
+      ),
+
+      opcoes.cartoes,
+
+      '',
+
+      false
+
+    );
+
+
+    preencherSelect(
+
+      document.getElementById(
+        'categoriaMassa'
+      ),
+
+      opcoes.categorias,
+
+      'Não alterar',
+
+      true
+
+    );
+
+
+    preencherSelect(
+
+      document.getElementById(
+        'responsavelMassa'
+      ),
+
+      opcoes.responsaveis,
+
+      'Não alterar',
+
+      true
+
+    );
+
+  }
+
+
+  function preencherSelect(
+    select,
+    lista,
+    placeholder,
+    permitirVazio
+  ) {
+
+
+    select.innerHTML =
+      '';
+
+
+    if (
+      permitirVazio
+    ) {
+
+
+      const vazio =
+        document.createElement(
+          'option'
+        );
+
+
+      vazio.value =
+        '';
+
+
+      vazio.textContent =
+        placeholder;
+
+
+      select.appendChild(
+        vazio
+      );
+
+    }
+
+
+    (
+      lista ||
+      []
+    )
+    .forEach(
+
+      function (valor) {
+
+
+        const option =
+          document.createElement(
+            'option'
+          );
+
+
+        option.value =
+          valor;
+
+
+        option.textContent =
+          valor;
+
+
+        select.appendChild(
+          option
+        );
+
+      }
+
+    );
+
+  }
+
+
+  /* =====================================================
+     LER PDF
+  ===================================================== */
+
+  function lerFatura() {
+
+
+    limparMensagem(
+      'mensagemTopo'
+    );
+
+
+    limparMensagem(
+      'mensagemResultado'
+    );
+
+
+    const arquivoInput =
+      document.getElementById(
+        'arquivo'
+      );
+
+
+    if (
+      !arquivoInput.files ||
+      !arquivoInput.files.length
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemTopo',
+
+        'Escolha um arquivo PDF primeiro.',
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    const arquivo =
+      arquivoInput.files[0];
+
+
+    if (
+      arquivo.type &&
+      arquivo.type !==
+        'application/pdf'
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemTopo',
+
+        'O arquivo selecionado não parece ser um PDF.',
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    alterarLoadingLeitura(
+      true
+    );
+
+
+    const leitor =
+      new FileReader();
+
+
+    leitor.onload =
+      function (evento) {
+
+
+        const resultado =
+          evento.target.result;
+
+
+        const base64 =
+          String(resultado)
+            .split(',')[1];
+
+
+        google.script.run
+
+          .withSuccessHandler(
+
+            function (dados) {
+
+
+              alterarLoadingLeitura(
+                false
+              );
+
+
+              carregarResultado(
+                dados
+              );
+
+            }
+
+          )
+
+          .withFailureHandler(
+
+            function (erro) {
+
+
+              alterarLoadingLeitura(
+                false
+              );
+
+
+              mostrarMensagem(
+
+                'mensagemTopo',
+
+                erro.message ||
+                String(erro),
+
+                'erro'
+
+              );
+
+            }
+
+          )
+
+          .processarFaturaPdf({
+
+            nome:
+              arquivo.name,
+
+            base64:
+              base64
+
+          });
+
+      };
+
+
+    leitor.readAsDataURL(
+      arquivo
+    );
+
+  }
+
+
+  /* =====================================================
+     CARREGAR RESULTADO
+  ===================================================== */
+
+  function carregarResultado(
+    resultado
+  ) {
+
+
+    transacoes =
+      resultado.transacoes ||
+      [];
+
+
+    document
+      .getElementById(
+        'resultadoArea'
+      )
+      .style.display =
+        'block';
+
+
+    document
+      .getElementById(
+        'nomeBanco'
+      )
+      .textContent =
+        resultado.banco ||
+        'Fatura';
+
+
+    document
+      .getElementById(
+        'contadorMovimentacoes'
+      )
+      .textContent =
+
+        '• ' +
+
+        transacoes.length +
+
+        (
+          transacoes.length === 1
+
+            ? ' movimentação'
+
+            : ' movimentações'
+        );
+
+
+    selecionarCartaoBanco(
+      resultado.banco
+    );
+
+
+    renderizarTabela();
+
+
+    atualizarResumo();
+
+  }
+
+
+  /* =====================================================
+     CARTÃO
+  ===================================================== */
+
+  function selecionarCartaoBanco(
+    banco
+  ) {
+
+
+    const select =
+      document.getElementById(
+        'cartao'
+      );
+
+
+    const bancoNormal =
+      String(
+        banco ||
+        ''
+      )
+      .toLowerCase();
+
+
+    for (
+      let i = 0;
+
+      i <
+      select.options.length;
+
+      i++
+    ) {
+
+
+      const opcaoNormal =
+        String(
+          select.options[
+            i
+          ].value
+        )
+        .toLowerCase();
+
+
+      if (
+        opcaoNormal ===
+        bancoNormal
+      ) {
+
+
+        select.selectedIndex =
+          i;
+
+
+        return;
+
+      }
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDERIZAR TABELA
+  ===================================================== */
+
+  function renderizarTabela() {
+
+
+    const corpo =
+      document.getElementById(
+        'corpoTabela'
+      );
+
+
+    corpo.innerHTML =
+      '';
+
+
+    transacoes.forEach(
+
+      function (
+        item,
+        indice
+      ) {
+
+
+        const linha =
+          document.createElement(
+            'tr'
+          );
+
+
+        linha.id =
+          'linha-' +
+          indice;
+
+
+        linha.className =
+          classeLinha(
+            item
+          );
+
+
+        linha.innerHTML = `
+
+
+          <td class="colCheck">
+
+
+            <input
+              type="checkbox"
+
+              id="check-${indice}"
+
+              ${
+                item.importar
+                  ? 'checked'
+                  : ''
+              }
+
+              onchange="
+                alterarSelecao(
+                  ${indice},
+                  this.checked
+                )
+              "
+            >
+
+
+          </td>
+
+
+          <td class="colStatus">
+
+            ${
+              badgeStatus(
+                item.tipo
+              )
+            }
+
+          </td>
+
+
+          <td class="colData">
+
+            ${
+              formatarDataExibicao(
+                item.dataOriginal
+              )
+            }
+
+          </td>
+
+
+          <td class="colData">
+
+
+            <input
+
+              class="linhaInput"
+
+              type="date"
+
+              id="data-${indice}"
+
+              value="${
+                item.dataControle ||
+                ''
+              }"
+
+            >
+
+
+          </td>
+
+
+          <td class="colDescricaoPdf">
+
+
+            <div class="descricaoOriginal">
+
+              ${
+                escaparHtml(
+                  item.descricaoOriginal ||
+                  ''
+                )
+              }
+
+            </div>
+
+
+            ${
+              item.finalCartao
+
+                ? `
+
+                  <div class="finalCartao">
+
+                    Final ${
+                      escaparHtml(
+                        item.finalCartao
+                      )
+                    }
+
+                  </div>
+
+                `
+
+                : ''
+            }
+
+
+          </td>
+
+
+          <td class="colDescricao">
+
+
+            <input
+
+              class="linhaInput"
+
+              type="text"
+
+              id="descricao-${indice}"
+
+              value="${
+                escaparAtributo(
+                  item.descricao ||
+                  ''
+                )
+              }"
+
+            >
+
+
+          </td>
+
+
+          <td class="colCategoria">
+
+
+            ${
+              criarSelectHtml(
+
+                'categoria-' +
+                indice,
+
+                opcoes.categorias,
+
+                item.categoria ||
+                '',
+
+                'Selecione...'
+
+              )
+            }
+
+
+          </td>
+
+
+          <td class="colResponsavel">
+
+
+            ${
+              criarSelectHtml(
+
+                'responsavel-' +
+                indice,
+
+                opcoes.responsaveis,
+
+                item.responsavel ||
+                '',
+
+                'Selecione...'
+
+              )
+            }
+
+
+          </td>
+
+
+          <td class="colForma">
+
+
+            ${
+              criarSelectHtml(
+
+                'forma-' +
+                indice,
+
+                opcoes.formas,
+
+                item.formaPagamento ||
+                'Crédito',
+
+                'Selecione...'
+
+              )
+            }
+
+
+          </td>
+
+
+          <td class="colValor">
+
+            ${
+              formatarMoeda(
+                item.valor
+              )
+            }
+
+          </td>
+
+
+        `;
+
+
+        corpo.appendChild(
+          linha
+        );
+
+      }
+
+    );
+
+
+    atualizarCheckboxTodos();
+
+  }
+
+
+  /* =====================================================
+     STATUS
+  ===================================================== */
+
+  function badgeStatus(
+    tipo
+  ) {
+
+
+    const status =
+      String(
+        tipo ||
+        'COMPRA'
+      )
+      .toUpperCase();
+
+
+    if (
+      status ===
+      'PARCELADO'
+    ) {
+
+
+      return `
+
+        <span class="
+          badge
+          badgeParcelado
+        ">
+          Parcelado
+        </span>
+
+      `;
+
+    }
+
+
+    if (
+      status ===
+      'PAGAMENTO'
+    ) {
+
+
+      return `
+
+        <span class="
+          badge
+          badgePagamento
+        ">
+          Pagamento
+        </span>
+
+      `;
+
+    }
+
+
+    if (
+      status ===
+      'CREDITO'
+    ) {
+
+
+      return `
+
+        <span class="
+          badge
+          badgeCredito
+        ">
+          Crédito
+        </span>
+
+      `;
+
+    }
+
+
+    return `
+
+      <span class="
+        badge
+        badgeCompra
+      ">
+        Compra
+      </span>
+
+    `;
+
+  }
+
+
+  function classeLinha(
+    item
+  ) {
+
+
+    let classe =
+
+      item.importar
+
+        ? ''
+
+        : 'naoSelecionada';
+
+
+    const tipo =
+      String(
+        item.tipo ||
+        ''
+      )
+      .toUpperCase();
+
+
+    if (
+      tipo ===
+      'PARCELADO'
+    ) {
+
+      classe +=
+        ' statusParcelado';
+
+    }
+
+
+    if (
+      tipo ===
+      'PAGAMENTO'
+    ) {
+
+      classe +=
+        ' statusPagamento';
+
+    }
+
+
+    if (
+      tipo ===
+      'CREDITO'
+    ) {
+
+      classe +=
+        ' statusCredito';
+
+    }
+
+
+    return classe.trim();
+
+  }
+
+
+  /* =====================================================
+     SELEÇÃO
+  ===================================================== */
+
+  function alterarSelecao(
+    indice,
+    marcado
+  ) {
+
+
+    transacoes[
+      indice
+    ].importar =
+      marcado;
+
+
+    const linha =
+      document.getElementById(
+        'linha-' +
+        indice
+      );
+
+
+    if (
+      linha
+    ) {
+
+
+      linha.className =
+        classeLinha(
+          transacoes[
+            indice
+          ]
+        );
+
+    }
+
+
+    atualizarResumo();
+
+
+    atualizarCheckboxTodos();
+
+  }
+
+
+  function alternarTodos(
+    marcado
+  ) {
+
+
+    transacoes.forEach(
+
+      function (
+        item,
+        indice
+      ) {
+
+
+        /*
+         Segurança:
+
+         Marcar todos
+         afeta apenas
+         compras normais.
+        */
+
+
+        if (
+          String(
+            item.tipo
+          )
+          .toUpperCase() !==
+            'COMPRA'
+        ) {
+
+          return;
+
+        }
+
+
+        item.importar =
+          marcado;
+
+
+        const check =
+          document.getElementById(
+            'check-' +
+            indice
+          );
+
+
+        if (
+          check
+        ) {
+
+          check.checked =
+            marcado;
+
+        }
+
+
+        const linha =
+          document.getElementById(
+            'linha-' +
+            indice
+          );
+
+
+        if (
+          linha
+        ) {
+
+
+          linha.className =
+            classeLinha(
+              item
+            );
+
+        }
+
+      }
+
+    );
+
+
+    atualizarResumo();
+
+  }
+
+
+  function atualizarCheckboxTodos() {
+
+
+    const compras =
+      transacoes.filter(
+
+        item =>
+
+          String(
+            item.tipo
+          )
+          .toUpperCase() ===
+            'COMPRA'
+
+      );
+
+
+    const selecionadas =
+      compras.filter(
+
+        item =>
+          item.importar
+
+      );
+
+
+    const checkbox =
+      document.getElementById(
+        'marcarTodos'
+      );
+
+
+    if (
+      !compras.length
+    ) {
+
+
+      checkbox.checked =
+        false;
+
+
+      checkbox.indeterminate =
+        false;
+
+
+      return;
+
+    }
+
+
+    checkbox.checked =
+
+      selecionadas.length ===
+      compras.length;
+
+
+    checkbox.indeterminate =
+
+      selecionadas.length > 0 &&
+
+      selecionadas.length <
+        compras.length;
+
+  }
+
+
+  /* =====================================================
+     AÇÕES EM MASSA
+  ===================================================== */
+
+  function aplicarEmMassa() {
+
+
+    const novaData =
+      document.getElementById(
+        'dataMassa'
+      )
+      .value;
+
+
+    const novaCategoria =
+      document.getElementById(
+        'categoriaMassa'
+      )
+      .value;
+
+
+    const novoResponsavel =
+      document.getElementById(
+        'responsavelMassa'
+      )
+      .value;
+
+
+    let alteradas =
+      0;
+
+
+    transacoes.forEach(
+
+      function (
+        item,
+        indice
+      ) {
+
+
+        if (
+          !item.importar
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          novaData
+        ) {
+
+
+          document
+            .getElementById(
+              'data-' +
+              indice
+            )
+            .value =
+              novaData;
+
+        }
+
+
+        if (
+          novaCategoria
+        ) {
+
+
+          document
+            .getElementById(
+              'categoria-' +
+              indice
+            )
+            .value =
+              novaCategoria;
+
+        }
+
+
+        if (
+          novoResponsavel
+        ) {
+
+
+          document
+            .getElementById(
+              'responsavel-' +
+              indice
+            )
+            .value =
+              novoResponsavel;
+
+        }
+
+
+        alteradas++;
+
+      }
+
+    );
+
+
+    if (
+      !alteradas
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemResultado',
+
+        'Selecione pelo menos uma movimentação.',
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    limparMensagem(
+      'mensagemResultado'
+    );
+
+  }
+
+
+  /* =====================================================
+     RESUMO
+  ===================================================== */
+
+  function atualizarResumo() {
+
+
+    const selecionadas =
+      transacoes.filter(
+
+        item =>
+          item.importar
+
+      );
+
+
+    const valorTotal =
+      selecionadas.reduce(
+
+        function (
+          total,
+          item
+        ) {
+
+
+          return (
+
+            total +
+
+            Number(
+              item.valor ||
+              0
+            )
+
+          );
+
+        },
+
+        0
+
+      );
+
+
+    const resumo =
+      document.getElementById(
+        'resumoSelecao'
+      );
+
+
+    if (
+      !transacoes.length
+    ) {
+
+
+      resumo.textContent =
+        'Nenhuma fatura carregada.';
+
+
+      document
+        .getElementById(
+          'btnImportar'
+        )
+        .disabled =
+          true;
+
+
+      return;
+
+    }
+
+
+    resumo.innerHTML = `
+
+
+      <strong>
+        ${selecionadas.length}
+      </strong>
+
+
+      ${
+        selecionadas.length === 1
+
+          ? 'movimentação selecionada'
+
+          : 'movimentações selecionadas'
+      }
+
+
+      &nbsp;•&nbsp;
+
+
+      Total:
+
+
+      <strong>
+
+        ${
+          formatarMoeda(
+            valorTotal
+          )
+        }
+
+      </strong>
+
+
+    `;
+
+
+    document
+      .getElementById(
+        'btnImportar'
+      )
+      .disabled =
+
+        selecionadas.length ===
+        0;
+
+  }
+
+
+  /* =====================================================
+     IMPORTAR
+  ===================================================== */
+
+  function importarSelecionados() {
+
+
+    limparMensagem(
+      'mensagemResultado'
+    );
+
+
+    const cartao =
+      document.getElementById(
+        'cartao'
+      )
+      .value;
+
+
+    if (
+      !cartao
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemResultado',
+
+        'Selecione o cartão da fatura.',
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    const itens =
+      [];
+
+
+    let erroValidacao =
+      '';
+
+
+    transacoes.forEach(
+
+      function (
+        item,
+        indice
+      ) {
+
+
+        if (
+          !item.importar
+        ) {
+
+          return;
+
+        }
+
+
+        const dataControle =
+          document
+            .getElementById(
+              'data-' +
+              indice
+            )
+            .value;
+
+
+        const descricao =
+          document
+            .getElementById(
+              'descricao-' +
+              indice
+            )
+            .value
+            .trim();
+
+
+        const categoria =
+          document
+            .getElementById(
+              'categoria-' +
+              indice
+            )
+            .value;
+
+
+        const responsavel =
+          document
+            .getElementById(
+              'responsavel-' +
+              indice
+            )
+            .value;
+
+
+        const formaPagamento =
+          document
+            .getElementById(
+              'forma-' +
+              indice
+            )
+            .value;
+
+
+        if (
+          !dataControle
+        ) {
+
+
+          erroValidacao =
+            'Preencha a data de controle de todas as movimentações selecionadas.';
+
+
+          return;
+
+        }
+
+
+        if (
+          !descricao
+        ) {
+
+
+          erroValidacao =
+            'Preencha a descrição de todas as movimentações selecionadas.';
+
+
+          return;
+
+        }
+
+
+        if (
+          !categoria
+        ) {
+
+
+          erroValidacao =
+            'Escolha uma categoria para todas as movimentações selecionadas.';
+
+
+          return;
+
+        }
+
+
+        if (
+          !responsavel
+        ) {
+
+
+          erroValidacao =
+            'Escolha um responsável para todas as movimentações selecionadas.';
+
+
+          return;
+
+        }
+
+
+        if (
+          !formaPagamento
+        ) {
+
+
+          erroValidacao =
+            'Escolha a forma de pagamento de todas as movimentações selecionadas.';
+
+
+          return;
+
+        }
+
+
+        itens.push({
+
+
+          ...item,
+
+
+          importar:
+            true,
+
+
+          dataControle,
+
+
+          descricao,
+
+
+          categoria,
+
+
+          responsavel,
+
+
+          formaPagamento
+
+
+        });
+
+      }
+
+    );
+
+
+    if (
+      erroValidacao
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemResultado',
+
+        erroValidacao,
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    if (
+      !itens.length
+    ) {
+
+
+      mostrarMensagem(
+
+        'mensagemResultado',
+
+        'Nenhuma movimentação foi selecionada.',
+
+        'erro'
+
+      );
+
+
+      return;
+
+    }
+
+
+    const botao =
+      document.getElementById(
+        'btnImportar'
+      );
+
+
+    botao.disabled =
+      true;
+
+
+    botao.textContent =
+      'Importando...';
+
+
+    google.script.run
+
+      .withSuccessHandler(
+
+        function (resultado) {
+
+
+          botao.disabled =
+            false;
+
+
+          botao.textContent =
+            'Importar selecionados';
+
+
+          mostrarMensagem(
+
+            'mensagemResultado',
+
+
+            resultado.importadas +
+
+
+            (
+              resultado.importadas === 1
+
+                ? ' movimentação importada com sucesso.'
+
+                : ' movimentações importadas com sucesso.'
+            ) +
+
+
+            (
+              resultado.duplicadas > 0
+
+                ? ' ' +
+                  resultado.duplicadas +
+                  ' duplicada(s) ignorada(s).'
+
+                : ''
+            ),
+
+
+            'sucesso'
+
+          );
+
+        }
+
+      )
+
+      .withFailureHandler(
+
+        function (erro) {
+
+
+          botao.disabled =
+            false;
+
+
+          botao.textContent =
+            'Importar selecionados';
+
+
+          mostrarMensagem(
+
+            'mensagemResultado',
+
+            erro.message ||
+              String(erro),
+
+            'erro'
+
+          );
+
+        }
+
+      )
+
+      .salvarImportacaoFatura({
+
+
+        cartao,
+
+
+        itens
+
+
+      });
+
+  }
+
+
+  /* =====================================================
+     HTML DO SELECT
+  ===================================================== */
+
+  function criarSelectHtml(
+    id,
+    lista,
+    selecionado,
+    placeholder
+  ) {
+
+
+    let html = `
+
+      <select
+
+        class="linhaInput"
+
+        id="${id}"
+
+      >
+
+    `;
+
+
+    html += `
+
+      <option value="">
+
+        ${
+          escaparHtml(
+            placeholder
+          )
+        }
+
+      </option>
+
+    `;
+
+
+    (
+      lista ||
+      []
+    )
+    .forEach(
+
+      function (valor) {
+
+
+        const marcado =
+
+          String(valor) ===
+          String(selecionado)
+
+            ? 'selected'
+
+            : '';
+
+
+        html += `
+
+          <option
+
+            value="${
+              escaparAtributo(
+                valor
+              )
+            }"
+
+            ${marcado}
+
+          >
+
+            ${
+              escaparHtml(
+                valor
+              )
+            }
+
+          </option>
+
+        `;
+
+      }
+
+    );
+
+
+    html +=
+      '</select>';
+
+
+    return html;
+
+  }
+
+
+  /* =====================================================
+     UTILITÁRIOS
+  ===================================================== */
+
+  function alterarLoadingLeitura(
+    ativo
+  ) {
+
+
+    document
+      .getElementById(
+        'loadingLeitura'
+      )
+      .style.display =
+
+        ativo
+
+          ? 'flex'
+
+          : 'none';
+
+
+    document
+      .getElementById(
+        'btnLer'
+      )
+      .disabled =
+        ativo;
+
+  }
+
+
+  function formatarMoeda(
+    valor
+  ) {
+
+
+    return Number(
+      valor ||
+      0
+    )
+    .toLocaleString(
+
+      'pt-BR',
+
+      {
+
+        style:
+          'currency',
+
+        currency:
+          'BRL'
+
+      }
+
+    );
+
+  }
+
+
+  function formatarDataExibicao(
+    iso
+  ) {
+
+
+    if (
+      !iso
+    ) {
+
+      return '';
+
+    }
+
+
+    const partes =
+      String(
+        iso
+      )
+      .split('-');
+
+
+    if (
+      partes.length !== 3
+    ) {
+
+      return iso;
+
+    }
+
+
+    return (
+
+      partes[2] +
+
+      '/' +
+
+      partes[1] +
+
+      '/' +
+
+      partes[0]
+
+    );
+
+  }
+
+
+  function mostrarMensagem(
+    id,
+    texto,
+    tipo
+  ) {
+
+
+    const elemento =
+      document.getElementById(
+        id
+      );
+
+
+    elemento.className =
+
+      'mensagem ' +
+      tipo;
+
+
+    elemento.textContent =
+      texto;
+
+  }
+
+
+  function limparMensagem(
+    id
+  ) {
+
+
+    const elemento =
+      document.getElementById(
+        id
+      );
+
+
+    elemento.className =
+      'mensagem';
+
+
+    elemento.textContent =
+      '';
+
+  }
+
+
+  function escaparHtml(
+    texto
+  ) {
+
+
+    return String(
+      texto ||
+      ''
+    )
+
+    .replace(
+      /&/g,
+      '&amp;'
+    )
+
+    .replace(
+      /</g,
+      '&lt;'
+    )
+
+    .replace(
+      />/g,
+      '&gt;'
+    )
+
+    .replace(
+      /"/g,
+      '&quot;'
+    )
+
+    .replace(
+      /'/g,
+      '&#039;'
+    );
+
+  }
+
+
+  function escaparAtributo(
+    texto
+  ) {
+
+
+    return escaparHtml(
+      texto
+    );
+
+  }
+
+
+</script>
+
+
+</body>
+</html>

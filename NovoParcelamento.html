@@ -1,0 +1,257 @@
+<div style="
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  color: #1f2937;
+">
+
+  <div style="margin-bottom:18px;">
+    <div style="font-size:20px;font-weight:700;">
+      Novo parcelamento
+    </div>
+
+    <div style="
+      font-size:13px;
+      color:#6b7280;
+      margin-top:4px;
+    ">
+      Preencha somente os dados principais.
+      O restante será calculado automaticamente.
+    </div>
+  </div>
+
+
+  <form id="formParcelamento">
+
+    <label>Categoria *</label>
+    <select id="categoria" required style="width:100%;padding:9px;margin:5px 0 12px;">
+      <option value="">Selecione...</option>
+    </select>
+
+
+    <label>Produto / Serviço *</label>
+    <input
+      id="produto"
+      type="text"
+      required
+      style="width:100%;padding:9px;margin:5px 0 12px;box-sizing:border-box;"
+    >
+
+
+    <label>Valor total *</label>
+    <input
+      id="valorTotal"
+      type="number"
+      min="0.01"
+      step="0.01"
+      required
+      placeholder="0,00"
+      style="width:100%;padding:9px;margin:5px 0 12px;box-sizing:border-box;"
+    >
+
+
+    <label>Quantidade de parcelas *</label>
+    <input
+      id="qtdParcelas"
+      type="number"
+      min="1"
+      step="1"
+      required
+      style="width:100%;padding:9px;margin:5px 0 12px;box-sizing:border-box;"
+    >
+
+
+    <label>Cartão *</label>
+    <select id="cartao" required style="width:100%;padding:9px;margin:5px 0 12px;">
+      <option value="">Selecione...</option>
+    </select>
+
+
+    <label>Responsável *</label>
+    <select id="responsavel" required style="width:100%;padding:9px;margin:5px 0 12px;">
+      <option value="">Selecione...</option>
+    </select>
+
+
+    <label>Data da 1ª parcela *</label>
+    <input
+      id="dataPrimeiraParcela"
+      type="date"
+      required
+      style="width:100%;padding:9px;margin:5px 0 12px;box-sizing:border-box;"
+    >
+
+
+    <label>Observação</label>
+    <input
+      id="observacao"
+      type="text"
+      style="width:100%;padding:9px;margin:5px 0 18px;box-sizing:border-box;"
+    >
+
+
+    <div
+      id="mensagem"
+      style="
+        min-height:20px;
+        margin-bottom:10px;
+        font-size:13px;
+      "
+    ></div>
+
+
+    <div style="
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+    ">
+
+      <button
+        type="button"
+        onclick="google.script.host.close()"
+        style="
+          padding:10px 18px;
+          border:1px solid #d1d5db;
+          background:white;
+          border-radius:6px;
+          cursor:pointer;
+        "
+      >
+        Cancelar
+      </button>
+
+
+      <button
+        id="btnSalvar"
+        type="submit"
+        style="
+          padding:10px 20px;
+          border:none;
+          background:#2563eb;
+          color:white;
+          border-radius:6px;
+          font-weight:600;
+          cursor:pointer;
+        "
+      >
+        Salvar
+      </button>
+
+    </div>
+
+  </form>
+</div>
+
+
+<script>
+
+  const form = document.getElementById('formParcelamento');
+  const mensagem = document.getElementById('mensagem');
+  const btnSalvar = document.getElementById('btnSalvar');
+
+
+  function preencherSelect(id, valores) {
+    const select = document.getElementById(id);
+
+    valores.forEach(valor => {
+      const option = document.createElement('option');
+
+      option.value = valor;
+      option.textContent = valor;
+
+      select.appendChild(option);
+    });
+  }
+
+
+  google.script.run
+    .withSuccessHandler(opcoes => {
+
+      preencherSelect(
+        'categoria',
+        opcoes.categorias || []
+      );
+
+      preencherSelect(
+        'cartao',
+        opcoes.cartoes || []
+      );
+
+      preencherSelect(
+        'responsavel',
+        opcoes.responsaveis || []
+      );
+
+    })
+    .obterOpcoesNovoParcelamento();
+
+
+  form.addEventListener('submit', function(event) {
+
+    event.preventDefault();
+
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = 'Salvando...';
+
+    mensagem.style.color = '#374151';
+    mensagem.textContent = 'Cadastrando parcelamento...';
+
+
+    const dados = {
+
+      categoria:
+        document.getElementById('categoria').value,
+
+      produto:
+        document.getElementById('produto').value.trim(),
+
+      valorTotal:
+        document.getElementById('valorTotal').value,
+
+      qtdParcelas:
+        document.getElementById('qtdParcelas').value,
+
+      cartao:
+        document.getElementById('cartao').value,
+
+      responsavel:
+        document.getElementById('responsavel').value,
+
+      dataPrimeiraParcela:
+        document.getElementById('dataPrimeiraParcela').value,
+
+      observacao:
+        document.getElementById('observacao').value.trim()
+
+    };
+
+
+    google.script.run
+
+      .withSuccessHandler(function(retorno) {
+
+        mensagem.style.color = '#15803d';
+        mensagem.textContent = retorno;
+
+        setTimeout(function() {
+          google.script.host.close();
+        }, 800);
+
+      })
+
+      .withFailureHandler(function(erro) {
+
+        mensagem.style.color = '#b91c1c';
+
+        mensagem.textContent =
+          erro.message || 'Não foi possível salvar.';
+
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = 'Salvar';
+
+      })
+
+      .salvarNovoParcelamento(dados);
+
+  });
+
+</script>
