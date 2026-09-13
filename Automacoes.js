@@ -4,9 +4,16 @@
  * ============================================================
  *
  * IMPORTANTE:
- * Existe apenas UM onEdit(e) em todo o projeto.
  *
- * Dashboard B7:
+ * Este arquivo usa um ACIONADOR INSTALÁVEL de edição.
+ *
+ * NÃO criar function onEdit(e).
+ *
+ * O acionador deverá chamar:
+ *
+ * aoEditarJuliusFinance(e)
+ *
+ * Dashboard:
  * 1. Atualiza Despesas Variáveis
  * 2. Ordena Parcelamentos
  * 3. Sincroniza Reembolsos
@@ -19,11 +26,16 @@
 
 /**
  * ============================================================
- * 🚀 ÚNICO ONEDIT DO SISTEMA
+ * 🚀 CONTROLADOR PRINCIPAL DE EDIÇÃO
  * ============================================================
+ *
+ * Esta função será chamada pelo acionador instalável:
+ *
+ * Origem: Planilha
+ * Evento: Ao editar
  */
 
-function onEdit(e) {
+function aoEditarJuliusFinance(e) {
 
   if (
     !e ||
@@ -45,17 +57,24 @@ function onEdit(e) {
    * ==========================================================
    * 📅 DASHBOARD — MUDANÇA DE COMPETÊNCIA
    * ==========================================================
+   *
+   * Em vez de depender somente de B7 exato,
+   * consideramos a região visual da competência.
+   *
+   * Assim funciona mesmo se houver célula mesclada
+   * ou se a edição for reportada como intervalo.
    */
 
   if (
     nomeAba === '📊 Dashboard' &&
-    e.range.getA1Notation() === 'B7'
+    edicaoAfetaCompetenciaDashboard_(
+      e.range
+    )
   ) {
 
     atualizarSistemaPorCompetencia_();
 
     return;
-
   }
 
 
@@ -72,7 +91,6 @@ function onEdit(e) {
     processarEdicaoDespesasVariaveis_(e);
 
     return;
-
   }
 
 
@@ -89,6 +107,57 @@ function onEdit(e) {
     processarEdicaoParcelamentos_(e);
 
   }
+
+}
+
+
+/**
+ * ============================================================
+ * 📅 EDIÇÃO AFETA COMPETÊNCIA DO DASHBOARD?
+ * ============================================================
+ *
+ * A competência visual fica na região da linha 7.
+ *
+ * B7 é a célula lógica usada pelo sistema.
+ *
+ * Também aceitamos B7:D8 por segurança para áreas
+ * mescladas / visuais do Dashboard.
+ */
+
+function edicaoAfetaCompetenciaDashboard_(
+  range
+) {
+
+  const linhaInicial =
+    range.getRow();
+
+
+  const linhaFinal =
+    range.getLastRow();
+
+
+  const colunaInicial =
+    range.getColumn();
+
+
+  const colunaFinal =
+    range.getLastColumn();
+
+
+  const cruzaLinhasCompetencia =
+    linhaInicial <= 8 &&
+    linhaFinal >= 7;
+
+
+  const cruzaColunasCompetencia =
+    colunaInicial <= 4 &&
+    colunaFinal >= 2;
+
+
+  return (
+    cruzaLinhasCompetencia &&
+    cruzaColunasCompetencia
+  );
 
 }
 
@@ -163,14 +232,73 @@ function atualizarSistemaPorCompetencia_() {
 
   /**
    * ----------------------------------------------------------
-   * 💸 REEMBOLSOS
+   * 💸 REEMBOLSOS — SINCRONIZAÇÃO
    * ----------------------------------------------------------
-   *
-   * Primeiro sincroniza os dados.
-   * Depois aplica a visão do mês selecionado.
    */
 
-  tentarSincronizarReembolsos_();
+  try {
+
+    if (
+      typeof sincronizarReembolsos ===
+      'function'
+    ) {
+
+      sincronizarReembolsos();
+
+    }
+
+  } catch (erro) {
+
+    console.log(
+      'Erro ao sincronizar Reembolsos: ' +
+      erro
+    );
+
+  }
+
+
+  SpreadsheetApp.flush();
+
+
+  /**
+   * ----------------------------------------------------------
+   * 👁️ REEMBOLSOS — VISÃO DA COMPETÊNCIA ATUAL
+   * ----------------------------------------------------------
+   *
+   * IMPORTANTE:
+   *
+   * O filtro é sempre aplicado DEPOIS da sincronização.
+   *
+   * sincronizarReembolsos() pode reconstruir as linhas.
+   *
+   * Por isso:
+   *
+   * sincroniza
+   *     ↓
+   * flush
+   *     ↓
+   * filtra
+   */
+
+  try {
+
+    if (
+      typeof aplicarVisaoCompetenciaAtualReembolsos ===
+      'function'
+    ) {
+
+      aplicarVisaoCompetenciaAtualReembolsos();
+
+    }
+
+  } catch (erro) {
+
+    console.log(
+      'Erro ao aplicar competência em Reembolsos: ' +
+      erro
+    );
+
+  }
 
 
   SpreadsheetApp.flush();
@@ -265,7 +393,6 @@ function processarEdicaoDespesasVariaveis_(e) {
 
 
     return;
-
   }
 
 
@@ -381,7 +508,6 @@ function processarEdicaoParcelamentos_(e) {
 
 
     return;
-
   }
 
 
@@ -535,7 +661,7 @@ function intervaloPossuiTerceiro_(
  * 👤 RESPONSÁVEL É TERCEIRO?
  * ============================================================
  *
- * Usa primeiro Configuracoes.gs.
+ * Usa primeiro Configuracoes.js.
  *
  * Caso ocorra algum problema,
  * consulta diretamente _CONFIG.
@@ -558,7 +684,7 @@ function responsavelEhTerceiroSeguro_(
 
   /**
    * ==========================================================
-   * CONFIGURAÇÕES.GS
+   * CONFIGURAÇÕES
    * ==========================================================
    */
 
@@ -674,7 +800,8 @@ function responsavelEhTerceiroSeguro_(
  * 💸 SINCRONIZA REEMBOLSOS COM SEGURANÇA
  * ============================================================
  *
- * AQUI está o novo comportamento:
+ * Usado quando uma despesa ou parcelamento
+ * de terceiro é alterado.
  *
  * 1. sincronizarReembolsos()
  * 2. aplicarVisaoCompetenciaAtualReembolsos()
@@ -717,6 +844,9 @@ function tentarSincronizarReembolsos_() {
       aplicarVisaoCompetenciaAtualReembolsos();
 
     }
+
+
+    SpreadsheetApp.flush();
 
   } catch (erro) {
 
@@ -781,6 +911,44 @@ function intervaloCruzaAlgumaColuna_(
     coluna =>
       coluna >= inicio &&
       coluna <= fim
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * 🎯 INTERVALO CONTÉM UMA CÉLULA?
+ * ============================================================
+ */
+
+function intervaloContemCelula_(
+  range,
+  linha,
+  coluna
+) {
+
+  const linhaInicial =
+    range.getRow();
+
+
+  const linhaFinal =
+    range.getLastRow();
+
+
+  const colunaInicial =
+    range.getColumn();
+
+
+  const colunaFinal =
+    range.getLastColumn();
+
+
+  return (
+    linha >= linhaInicial &&
+    linha <= linhaFinal &&
+    coluna >= colunaInicial &&
+    coluna <= colunaFinal
   );
 
 }

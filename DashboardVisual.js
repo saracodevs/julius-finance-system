@@ -1,60 +1,59 @@
 /**
  * ============================================================
- * 💰 DASHBOARD VISUAL V4 — JULIUS FINANCE SYSTEM
+ * 💰 DASHBOARD VISUAL V5.3 — JULIUS FINANCE SYSTEM
  * ============================================================
- *
- * Foco desta versão:
- * - remover textos duplicados;
- * - limpar o painel de alertas;
- * - deixar espaço real para o Julius;
- * - preservar fórmulas e lógica existente;
- * - manter a paleta aprovada.
+ * - B7 continua sendo a competência oficial.
+ * - Dropdown de competência.
+ * - KPIs: receitas, despesas, saldo e economia.
+ * - Fluxo financeiro acumulado.
+ * - Gastos por TODAS as categorias.
+ * - Exclui responsáveis do tipo "Terceiro / Reembolso".
+ * - Mantém Julius Diz e a caricatura existente.
+ * - Não cria onEdit.
  */
 
 function montarDashboardVisual() {
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const aba = ss.getSheetByName('📊 Dashboard');
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const aba =
+    ss.getSheetByName('📊 Dashboard');
 
   if (!aba) {
-    throw new Error('A aba 📊 Dashboard não foi encontrada.');
+    throw new Error(
+      'A aba 📊 Dashboard não foi encontrada.'
+    );
   }
 
-
-  /**
-   * ==========================================================
-   * 🎨 PALETA JULIUS
-   * ==========================================================
-   */
 
   const C = {
 
     fundo: '#F1E4CF',
     fundoClaro: '#F8F0E3',
     card: '#FFF8EC',
+    branco: '#FFF9F0',
 
-    azulPetroleo: '#286173',
+    azul: '#286173',
     azulEscuro: '#194754',
+    azulMuitoEscuro: '#103945',
     azulClaro: '#D8E8EB',
 
     caramelo: '#C78342',
     carameloClaro: '#E7B678',
+
+    verde: '#668348',
+    verdeEscuro: '#4F7A3B',
+    verdeClaro: '#E1E8D2',
+
+    vermelho: '#B9553D',
+    vermelhoClaro: '#F2D5CC',
 
     marrom: '#654229',
     marromEscuro: '#3C2A1E',
 
     texto: '#33291F',
     textoSecundario: '#786554',
-    branco: '#FFF9F0',
-
-    verde: '#668348',
-    verdeClaro: '#E1E8D2',
-
-    laranja: '#D98B3A',
-    laranjaClaro: '#FAE2C3',
-
-    vermelho: '#B9553D',
-    vermelhoClaro: '#F2D5CC',
 
     borda: '#C3A989'
   };
@@ -62,734 +61,2528 @@ function montarDashboardVisual() {
 
   /**
    * ==========================================================
-   * 🧱 BASE
+   * COMPETÊNCIA
    * ==========================================================
    */
 
-  aba.setHiddenGridlines(true);
+  let competencia =
+    aba.getRange('B7').getValue();
+
+
+  if (
+    !(competencia instanceof Date) ||
+    isNaN(
+      competencia.getTime()
+    )
+  ) {
+
+    const hoje =
+      new Date();
+
+
+    competencia =
+      new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        1,
+        12,
+        0,
+        0
+      );
+
+  }
+
+
+  /**
+   * ==========================================================
+   * REMOVE GRÁFICOS ANTIGOS
+   * ==========================================================
+   */
 
   aba
-    .getRange('A1:Z50')
-    .setBackground(C.fundo)
-    .setFontFamily('Arial')
-    .setFontColor(C.texto)
-    .setVerticalAlignment('middle');
+    .getCharts()
+    .forEach(
+      function (grafico) {
+
+        aba.removeChart(
+          grafico
+        );
+
+      }
+    );
 
 
   /**
    * ==========================================================
-   * 📐 COLUNAS
+   * GARANTE QUE BASE DOS GRÁFICOS FIQUE VISÍVEL
    * ==========================================================
    */
 
-  const larguras = {
-    A: 22,
-    B: 150,
-    C: 72,
-    D: 72,
-    E: 18,
-    F: 150,
-    G: 72,
-    H: 72,
-    I: 18,
-    J: 150,
-    K: 72,
-    L: 72,
-    M: 22
-  };
+  try {
 
-  Object.keys(larguras).forEach(coluna => {
-
-    aba.setColumnWidth(
-      colunaParaNumeroDashboard_(coluna),
-      larguras[coluna]
+    aba.showColumns(
+      27,
+      6
     );
 
-  });
+  } catch (erro) {
+
+  }
 
 
   /**
    * ==========================================================
-   * 📏 ALTURAS
+   * LIMPEZA
+   * ==========================================================
+   */
+
+  dashboardV53DesfazerMesclas_(
+    aba,
+    'A1:S46'
+  );
+
+
+  aba
+    .getRange('A1:S46')
+    .clearContent()
+    .clearFormat()
+    .setBackground(
+      C.fundo
+    )
+    .setFontFamily(
+      'Arial'
+    )
+    .setFontColor(
+      C.texto
+    )
+    .setVerticalAlignment(
+      'middle'
+    );
+
+
+  aba
+    .getRange('AH1:AM50')
+    .clearContent()
+    .clearFormat();
+
+
+  aba.setHiddenGridlines(
+    true
+  );
+
+
+  /**
+   * ==========================================================
+   * COLUNAS
+   * ==========================================================
+   */
+
+  aba.setColumnWidth(
+    1,
+    18
+  );
+
+
+  for (
+    let coluna = 2;
+    coluna <= 19;
+    coluna++
+  ) {
+
+    aba.setColumnWidth(
+      coluna,
+      76
+    );
+
+  }
+
+
+  /**
+   * ==========================================================
+   * LINHAS
    * ==========================================================
    */
 
   const alturas = {
 
-    1: 10,
-    2: 46,
-    3: 10,
-    4: 27,
-    5: 12,
+    1: 8,
 
-    6: 22,
-    7: 42,
+    2: 34,
+    3: 27,
+    4: 26,
 
-    8: 16,
-    9: 30,
+    5: 10,
 
-    10: 28,
-    11: 44,
-    12: 18,
+    6: 24,
+    7: 34,
+    8: 28,
 
-    13: 10,
+    9: 10,
+
+    10: 25,
+    11: 35,
+    12: 38,
+    13: 22,
+
     14: 10,
 
     15: 28,
-    16: 44,
-    17: 18,
+    16: 24,
 
-    18: 12,
-    19: 12,
+    17: 31,
+    18: 31,
+    19: 31,
+    20: 31,
+    21: 31,
+    22: 31,
+    23: 22,
 
-    20: 30,
-    21: 34,
-    22: 34,
-    23: 34,
+    24: 10,
 
-    24: 14,
+    25: 28,
+    26: 24,
 
-    25: 30,
+    27: 31,
+    28: 31,
+    29: 31,
+    30: 31,
+    31: 31,
+    32: 31,
+    33: 31,
+    34: 22,
 
-    26: 28,
-    27: 28,
-    28: 28,
-    29: 28,
-    30: 30,
+    35: 10,
 
-    31: 12,
-    32: 24
+    36: 28,
+    37: 29,
+    38: 29,
+    39: 29,
+    40: 22,
+
+    41: 10,
+
+    42: 22
   };
 
-  Object.keys(alturas).forEach(linha => {
 
-    aba.setRowHeight(
-      Number(linha),
-      alturas[linha]
+  Object
+    .keys(
+      alturas
+    )
+    .forEach(
+      function (linha) {
+
+        aba.setRowHeight(
+          Number(
+            linha
+          ),
+          alturas[linha]
+        );
+
+      }
     );
 
-  });
-
 
   /**
    * ==========================================================
-   * 🔝 CABEÇALHO
+   * CABEÇALHO
    * ==========================================================
    */
 
   aba
-    .getRange('A1:M3')
-    .setBackground(C.azulPetroleo);
+    .getRange('A1:S4')
+    .setBackground(
+      C.azul
+    );
 
 
   aba
-    .getRange('B2')
-    .setValue('💰 CONTROLE FINANCEIRO')
-    .setFontSize(22)
-    .setFontWeight('bold')
-    .setFontColor(C.branco)
-    .setHorizontalAlignment('left');
+    .getRange('B2:H2')
+    .merge()
+    .setValue(
+      'JULIUS FINANCE SYSTEM'
+    )
+    .setFontSize(
+      21
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.branco
+    )
+    .setHorizontalAlignment(
+      'left'
+    );
 
 
   aba
-    .getRange('J2')
-    .setValue('JULIUS FINANCE')
-    .setFontSize(10)
-    .setFontWeight('bold')
-    .setFontColor(C.carameloClaro)
-    .setHorizontalAlignment('right');
+    .getRange('B3:H3')
+    .merge()
+    .setValue(
+      'Controle de hoje. Liberdade de amanhã.'
+    )
+    .setFontSize(
+      9
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.carameloClaro
+    );
 
 
   aba
-    .getRange('A4:M4')
-    .setBackground(C.caramelo)
-    .setFontColor(C.marromEscuro);
+    .getRange('B4:H4')
+    .merge()
+    .setValue(
+      'Seu dinheiro. Suas decisões. Seu controle.'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontColor(
+      C.branco
+    );
 
 
   aba
-    .getRange('B4')
-    .setValue('cada real tem endereço 📍')
-    .setFontSize(10)
-    .setFontStyle('italic')
-    .setFontWeight('bold');
+    .getRange('I2:K2')
+    .merge()
+    .setValue(
+      '📅 COMPETÊNCIA'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.carameloClaro
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
 
 
   aba
-    .getRange('J4')
-    .setValue('modo economia ativado 👀')
-    .setFontSize(9)
-    .setFontStyle('italic')
-    .setHorizontalAlignment('right');
+    .getRange('I3:K4')
+    .merge();
+
+
+  aba
+    .getRange('I3')
+    .setFormula(
+      '=$B$7'
+    )
+    .setNumberFormat(
+      'mmmm/yyyy'
+    )
+    .setFontSize(
+      13
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.branco
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  aba
+    .getRange('P2:S2')
+    .merge()
+    .setValue(
+      'CADA REAL TEM ENDEREÇO'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.carameloClaro
+    )
+    .setHorizontalAlignment(
+      'right'
+    );
+
+
+  aba
+    .getRange('P3:S4')
+    .merge()
+    .setValue(
+      '👀 modo economia ativado'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.branco
+    )
+    .setHorizontalAlignment(
+      'right'
+    );
 
 
   /**
    * ==========================================================
-   * 📅 COMPETÊNCIA
+   * SELETOR DE COMPETÊNCIA
    * ==========================================================
    */
 
-  cardBase_(
+  dashboardV53Card_(
     aba,
-    'B6:D7',
+    'B6:E8',
     C.card,
     C.borda
   );
 
 
   aba
-    .getRange('B6')
-    .setValue('📅 COMPETÊNCIA')
-    .setFontSize(9)
-    .setFontWeight('bold')
-    .setFontColor(C.textoSecundario);
+    .getRange('B6:E6')
+    .merge()
+    .setValue(
+      '📅 MÊS DE REFERÊNCIA'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  aba
+    .getRange('B7:E8')
+    .merge();
 
 
   aba
     .getRange('B7')
-    .setBackground(C.fundoClaro)
-    .setFontColor(C.azulEscuro)
-    .setFontSize(18)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setNumberFormat('mmmm/yyyy');
+    .setValue(
+      competencia
+    )
+    .setNumberFormat(
+      'mmmm/yyyy'
+    )
+    .setFontSize(
+      17
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.azulEscuro
+    )
+    .setBackground(
+      C.fundoClaro
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  const listaMeses = [];
+
+
+  for (
+    let i = -18;
+    i <= 18;
+    i++
+  ) {
+
+    listaMeses.push([
+
+      new Date(
+        competencia.getFullYear(),
+        competencia.getMonth() + i,
+        1,
+        12,
+        0,
+        0
+      )
+
+    ]);
+
+  }
+
+
+  aba
+    .getRange(
+      2,
+      24,
+      listaMeses.length,
+      1
+    )
+    .clearContent()
+    .setValues(
+      listaMeses
+    )
+    .setNumberFormat(
+      'mmmm/yyyy'
+    );
+
+
+  const regraCompetencia =
+    SpreadsheetApp
+      .newDataValidation()
+      .requireValueInRange(
+        aba.getRange(
+          2,
+          24,
+          listaMeses.length,
+          1
+        ),
+        true
+      )
+      .setAllowInvalid(
+        false
+      )
+      .setHelpText(
+        'Selecione a competência desejada.'
+      )
+      .build();
+
+
+  aba
+    .getRange('B7')
+    .setDataValidation(
+      regraCompetencia
+    );
 
 
   /**
    * ==========================================================
-   * 💡 JULIUS LEMBRA
+   * JULIUS LEMBRA
    * ==========================================================
    */
 
-  cardBase_(
+  dashboardV53Card_(
     aba,
-    'F6:L7',
+    'F6:S8',
     C.card,
     C.borda
   );
 
 
   aba
-    .getRange('F6')
-    .setValue('💡 JULIUS LEMBRA')
-    .setFontSize(9)
-    .setFontWeight('bold')
-    .setFontColor(C.caramelo);
+    .getRange('F6:S6')
+    .merge()
+    .setValue(
+      'JULIUS LEMBRA'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.caramelo
+    );
 
 
   aba
-    .getRange('F7')
-    .setValue('se não gastar, sobra. A matemática é implacável.')
-    .setFontSize(10)
-    .setFontStyle('italic')
-    .setFontColor(C.textoSecundario);
+    .getRange('F7:S8')
+    .merge()
+    .setValue(
+      '“Se eu não comprar nada, o desconto é maior.”'
+    )
+    .setFontSize(
+      11
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.marrom
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  SpreadsheetApp.flush();
 
 
   /**
    * ==========================================================
-   * 📊 VISÃO GERAL
+   * COLETA DADOS
+   * ==========================================================
+   */
+
+  const dados =
+    dashboardV53ColetarDados_(
+      ss,
+      competencia
+    );
+
+
+  /**
+   * ==========================================================
+   * ENGINE
    * ==========================================================
    */
 
   aba
-    .getRange('B9:L9')
-    .setBackground(C.fundo);
+    .getRange('T1:AF100')
+    .clearContent();
 
 
   aba
-    .getRange('B9')
-    .setValue('VISÃO GERAL DO MÊS')
-    .setFontSize(13)
-    .setFontWeight('bold')
-    .setFontColor(C.marromEscuro);
+    .getRange('V1')
+    .setValue(
+      'JULIUS DASHBOARD ENGINE'
+    );
 
 
-  criarCardFinanceiro_(
+  aba
+    .getRange('U2:U8')
+    .setValues([
+
+      [
+        dados.receitasTotal
+      ],
+
+      [
+        dados.fixasTotal
+      ],
+
+      [
+        dados.variaveisTotal
+      ],
+
+      [
+        dados.parcelamentosTotal
+      ],
+
+      [
+        dados.despesasTotal
+      ],
+
+      [
+        dados.saldo
+      ],
+
+      [
+        dados.economia
+      ]
+
+    ]);
+
+
+  aba
+    .getRange('U2:U7')
+    .setNumberFormat(
+      '"R$ " #,##0.00;-"R$ " #,##0.00'
+    );
+
+
+  aba
+    .getRange('U8')
+    .setNumberFormat(
+      '0.0%'
+    );
+
+
+  /**
+   * ==========================================================
+   * KPIs
+   * ==========================================================
+   */
+
+  aba
+    .getRange('B10:S10')
+    .merge()
+    .setValue(
+      'VISÃO GERAL DO MÊS'
+    )
+    .setFontSize(
+      11
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.marromEscuro
+    );
+
+
+  dashboardV53KpiMoeda_(
     aba,
-    'B10:D12',
-    'B10',
-    'B11',
-    '💵 RECEITAS',
-    C.verde,
+    'B11:E13',
+    '↗  RECEITAS',
+    dados.receitasTotal,
+    C.verdeClaro,
+    C.verdeEscuro,
+    'entradas da competência',
     C
   );
 
 
-  criarCardFinanceiro_(
+  dashboardV53KpiMoeda_(
     aba,
-    'F10:H12',
-    'F10',
-    'F11',
-    '🏠 DESPESAS FIXAS',
+    'F11:I13',
+    '↘  DESPESAS',
+    dados.despesasTotal,
+    C.vermelhoClaro,
     C.vermelho,
+    'fixas + variáveis + parcelas',
     C
   );
 
 
-  criarCardFinanceiro_(
+  dashboardV53KpiMoeda_(
     aba,
-    'J10:L12',
-    'J10',
-    'J11',
-    '🛒 DESPESAS VARIÁVEIS',
-    C.laranja,
+    'J11:N13',
+    '▣  SALDO DO MÊS',
+    dados.saldo,
+    C.azulClaro,
+    C.azulEscuro,
+    'resultado da competência',
     C
   );
 
 
-  criarCardFinanceiro_(
+  dashboardV53KpiPercentual_(
     aba,
-    'B15:D17',
-    'B15',
-    'B16',
-    '💳 PARCELAMENTOS',
-    C.azulPetroleo,
+    'O11:S13',
+    '◎  ECONOMIA',
+    dados.economia,
+    C.carameloClaro,
+    C.marromEscuro,
+    'percentual da receita preservado',
     C
   );
 
 
   /**
    * ==========================================================
-   * 💰 SALDO — LIMPO
+   * FLUXO
    * ==========================================================
    */
 
-  cardBase_(
+  dashboardV53Modulo_(
     aba,
-    'F15:H17',
-    C.azulPetroleo,
+    'B15:I23',
+    '▥  FLUXO FINANCEIRO',
+    'Receitas x despesas acumuladas na competência',
+    C.azul,
+    C
+  );
+
+
+  /**
+   * ==========================================================
+   * CATEGORIAS
+   * ==========================================================
+   */
+
+  dashboardV53Modulo_(
+    aba,
+    'J15:N23',
+    '◔  GASTOS POR CATEGORIA',
+    'Todas as categorias com movimentação no mês',
+    C.caramelo,
+    C
+  );
+
+
+  /**
+   * ==========================================================
+   * JULIUS DIZ
+   * ==========================================================
+   */
+
+  dashboardV53Card_(
+    aba,
+    'O15:S23',
+    C.azulMuitoEscuro,
     C.azulEscuro
   );
 
 
-  /**
-   * limpa textos antigos dentro do card
-   * sem tocar no H16
-   */
-
   aba
-    .getRange('F15:G17')
-    .clearContent();
-
-
-  aba
-    .getRange('F15')
-    .setValue('💰 SALDO DO MÊS')
-    .setFontSize(10)
-    .setFontWeight('bold')
-    .setFontColor(C.carameloClaro);
-
-
-  aba
-    .getRange('H16')
-    .setFontSize(19)
-    .setFontWeight('bold')
-    .setHorizontalAlignment('center')
-    .setNumberFormat('"R$ " #,##0.00;-"R$ " #,##0.00');
-
-
-  const saldo =
-    Number(
-      aba.getRange('H16').getValue()
+    .getRange('O15:S15')
+    .merge()
+    .setValue(
+      '👀  JULIUS DIZ...'
+    )
+    .setFontSize(
+      11
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.branco
     );
 
 
-  if (saldo < 0) {
-
-    aba
-      .getRange('H16')
-      .setFontColor('#FFD5C5');
-
-  } else {
-
-    aba
-      .getRange('H16')
-      .setFontColor('#E6F0D9');
-  }
-
-
-  /**
-   * ==========================================================
-   * 👔 ESPAÇO LIVRE PARA O JULIUS
-   * ==========================================================
-   *
-   * Sem borda e sem card.
-   * Apenas fundo para a ilustração flutuante.
-   */
-
-  aba
-    .getRange('J15:L23')
-    .clearContent()
-    .setBackground(C.fundo);
-
-
-  /**
-   * ==========================================================
-   * 👀 JULIUS ESTÁ DE OLHO
-   * ==========================================================
-   */
-
-  cardBase_(
+  dashboardV53MontarJuliusDiz_(
     aba,
-    'B20:H23',
-    C.card,
-    C.borda
+    dados,
+    C
   );
 
 
   /**
-   * limpa restos antigos
-   */
-
-  aba
-    .getRange('B20:H23')
-    .clearContent();
-
-
-  aba
-    .getRange('B20')
-    .setValue('👀 JULIUS ESTÁ DE OLHO')
-    .setFontSize(12)
-    .setFontWeight('bold')
-    .setFontColor(C.marrom);
-
-
-  /**
    * ==========================================================
-   * ALERTA 1 — SALDO
+   * CARTÕES
    * ==========================================================
    */
 
-  let textoSaldo;
-  let corSaldo;
-
-
-  if (saldo < 0) {
-
-    textoSaldo =
-      '🔴 O mês está fechando no negativo: ' +
-      formatarMoedaDashboard_(saldo);
-
-    corSaldo =
-      C.vermelho;
-
-  } else {
-
-    textoSaldo =
-      '🟢 Saldo positivo: ' +
-      formatarMoedaDashboard_(saldo);
-
-    corSaldo =
-      C.verde;
-  }
-
-
-  aba
-    .getRange('B21:H21')
-    .merge()
-    .setValue(textoSaldo)
-    .setFontSize(10)
-    .setFontWeight('bold')
-    .setFontColor(corSaldo)
-    .setWrap(true);
-
-
-  /**
-   * ==========================================================
-   * ALERTA 2 — ECONOMIA
-   * ==========================================================
-   *
-   * IMPORTANTE:
-   * D21 tinha a fórmula antiga.
-   *
-   * Como acabamos de usar B21:H21 como linha visual,
-   * precisamos buscar a taxa ANTES de substituir.
-   *
-   * Para preservar a lógica, calculamos a taxa a partir
-   * dos valores do próprio Dashboard.
-   */
-
-  const receitas =
-    Number(
-      aba.getRange('B11').getValue()
-    ) || 0;
-
-
-  const fixas =
-    Number(
-      aba.getRange('F11').getValue()
-    ) || 0;
-
-
-  const variaveis =
-    Number(
-      aba.getRange('J11').getValue()
-    ) || 0;
-
-
-  const parcelas =
-    Number(
-      aba.getRange('B16').getValue()
-    ) || 0;
-
-
-  let taxa =
-    0;
-
-
-  if (receitas > 0) {
-
-    taxa =
-      1 -
-      (
-        fixas +
-        variaveis +
-        parcelas
-      ) /
-      receitas;
-  }
-
-
-  let textoTaxa;
-  let corTaxa;
-
-
-  if (taxa >= 0.20) {
-
-    textoTaxa =
-      '🟢 Economia aprovada pelo Julius: ' +
-      formatarPercentualDashboard_(taxa);
-
-    corTaxa =
-      C.verde;
-
-  } else if (taxa >= 0.10) {
-
-    textoTaxa =
-      '🟠 Economia em atenção: ' +
-      formatarPercentualDashboard_(taxa);
-
-    corTaxa =
-      C.laranja;
-
-  } else {
-
-    textoTaxa =
-      '🔴 Taxa de economia crítica: ' +
-      formatarPercentualDashboard_(taxa);
-
-    corTaxa =
-      C.vermelho;
-  }
-
-
-  aba
-    .getRange('B22:H22')
-    .merge()
-    .setValue(textoTaxa)
-    .setFontSize(10)
-    .setFontWeight('bold')
-    .setFontColor(corTaxa)
-    .setWrap(true);
-
-
-  /**
-   * ==========================================================
-   * ALERTA 3 — PARCELAMENTOS
-   * ==========================================================
-   */
-
-  let percentualParcelas =
-    0;
-
-
-  if (receitas > 0) {
-
-    percentualParcelas =
-      parcelas /
-      receitas;
-  }
-
-
-  let textoParcelas;
-  let corParcelas;
-
-
-  if (percentualParcelas >= 0.50) {
-
-    textoParcelas =
-      '🟠 Parcelamentos consomem ' +
-      formatarPercentualDashboard_(
-        percentualParcelas
-      ) +
-      ' da receita.';
-
-    corParcelas =
-      C.laranja;
-
-  } else {
-
-    textoParcelas =
-      '🔵 Parcelamentos do mês: ' +
-      formatarMoedaDashboard_(
-        parcelas
-      );
-
-    corParcelas =
-      C.azulPetroleo;
-  }
-
-
-  aba
-    .getRange('B23:H23')
-    .merge()
-    .setValue(textoParcelas)
-    .setFontSize(10)
-    .setFontWeight('bold')
-    .setFontColor(corParcelas)
-    .setWrap(true);
-
-
-  /**
-   * ==========================================================
-   * 📊 FLUXO DE CAIXA
-   * ==========================================================
-   */
-
-  aba
-    .getRange('B25:L25')
-    .setBackground(C.marrom)
-    .setFontColor(C.branco);
-
-
-  aba
-    .getRange('B25')
-    .setValue('📊 PARA ONDE FOI O DINHEIRO?')
-    .setFontSize(12)
-    .setFontWeight('bold');
-
-
-  estilizarFluxoDashboard_(
+  dashboardV53Modulo_(
     aba,
-    26,
-    C.verdeClaro,
+    'B25:I34',
+    '▰  CARTÕES DE CRÉDITO',
+    'Participação dos cartões nos gastos do mês',
+    C.azul,
+    C
+  );
+
+
+  aba
+    .getRange('C28:H32')
+    .merge()
+    .setValue(
+      'RANKING + GRÁFICO DE CARTÕES\nNA PRÓXIMA ETAPA'
+    )
+    .setFontSize(
+      9
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setVerticalAlignment(
+      'middle'
+    )
+    .setWrap(
+      true
+    );
+
+
+  /**
+   * ==========================================================
+   * ORÇAMENTO
+   * ==========================================================
+   */
+
+  dashboardV53Modulo_(
+    aba,
+    'J25:N34',
+    '◕  ORÇAMENTO DO MÊS',
+    'Planejado x realizado',
     C.verde,
     C
   );
 
 
-  estilizarFluxoDashboard_(
-    aba,
-    27,
-    C.vermelhoClaro,
-    C.vermelho,
-    C
-  );
-
-
-  estilizarFluxoDashboard_(
-    aba,
-    28,
-    C.vermelhoClaro,
-    C.vermelho,
-    C
-  );
-
-
-  estilizarFluxoDashboard_(
-    aba,
-    29,
-    C.laranjaClaro,
-    C.laranja,
-    C
-  );
-
-
-  estilizarFluxoDashboard_(
-    aba,
-    30,
-    C.azulClaro,
-    C.azulEscuro,
-    C
-  );
-
-
-  /**
-   * ==========================================================
-   * 💵 FORMATO MONETÁRIO
-   * ==========================================================
-   */
-
-  [
-    'B11',
-    'F11',
-    'J11',
-    'B16',
-    'H16',
-    'F26',
-    'F27',
-    'F28',
-    'F29',
-    'F30'
-  ].forEach(celula => {
-
-    aba
-      .getRange(celula)
-      .setNumberFormat(
-        '"R$ " #,##0.00;-"R$ " #,##0.00'
-      );
-
-  });
-
-
-  /**
-   * ==========================================================
-   * 🧾 RODAPÉ
-   * ==========================================================
-   */
-
   aba
-    .getRange('B32:L32')
-    .setBackground(C.fundo)
-    .setFontColor(C.textoSecundario);
-
-
-  aba
-    .getRange('B32')
+    .getRange('K28:M32')
+    .merge()
     .setValue(
-      '🟢 saudável   •   🟠 atenção   •   🔴 Julius quer explicações'
+      'BARRAS DE PROGRESSO\nNA PRÓXIMA ETAPA'
     )
-    .setFontSize(8)
-    .setFontStyle('italic');
+    .setFontSize(
+      9
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setVerticalAlignment(
+      'middle'
+    )
+    .setWrap(
+      true
+    );
+
+
+  /**
+   * ==========================================================
+   * REEMBOLSOS
+   * ==========================================================
+   */
+
+  dashboardV53Modulo_(
+    aba,
+    'O25:S34',
+    '↔  REEMBOLSOS',
+    'Recebido • pendente • saldo',
+    C.verde,
+    C
+  );
+
+
+  aba
+    .getRange('P28:R32')
+    .merge()
+    .setValue(
+      'INDICADORES DE\nREEMBOLSO'
+    )
+    .setFontSize(
+      9
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setVerticalAlignment(
+      'middle'
+    );
+
+
+  /**
+   * ==========================================================
+   * PRÓXIMOS COMPROMISSOS
+   * ==========================================================
+   */
+
+  dashboardV53Modulo_(
+    aba,
+    'B36:S40',
+    '▣  PRÓXIMOS COMPROMISSOS',
+    'Parcelamentos e obrigações que merecem atenção',
+    C.marrom,
+    C
+  );
+
+
+  aba
+    .getRange('C38:R39')
+    .merge()
+    .setValue(
+      'PRÓXIMOS VENCIMENTOS ENTRAM NA ETAPA FINAL'
+    )
+    .setFontSize(
+      9
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setVerticalAlignment(
+      'middle'
+    );
+
+
+  aba
+    .getRange('B42:S42')
+    .merge()
+    .setValue(
+      'JULIUS FINANCE SYSTEM  •  Controle de hoje. Liberdade de amanhã.'
+    )
+    .setFontSize(
+      8
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  /**
+   * ==========================================================
+   * BASES DOS GRÁFICOS
+   * ==========================================================
+   */
+
+  dashboardV53EscreverFluxo_(
+    aba,
+    dados
+  );
+
+
+  dashboardV53EscreverCategorias_(
+    aba,
+    dados
+  );
+
+
+  SpreadsheetApp.flush();
+
+
+  /**
+   * ==========================================================
+   * GRÁFICOS
+   * ==========================================================
+   */
+
+  dashboardV53CriarGraficos_(
+    aba,
+    dados,
+    C
+  );
+
+
+  /**
+   * ==========================================================
+   * JULIUS
+   * ==========================================================
+   */
+
+  dashboardV53PosicionarJulius_(
+    aba
+  );
+
+
+  /**
+   * ==========================================================
+   * OCULTA SOMENTE T:Z
+   * ==========================================================
+   */
+
+  try {
+
+    aba.hideColumns(
+      20,
+      7
+    );
+
+  } catch (erro) {
+
+  }
 
 
   SpreadsheetApp.flush();
 
 
   ss.toast(
-    'Dashboard Julius V4 aplicado 👀💰',
-    'Controle Financeiro',
+    'Dashboard Julius V5.3 aplicado 📊👀',
+    'Julius Finance',
     4
   );
+
 }
 
 
 /**
  * ============================================================
- * CARD FINANCEIRO
+ * COLETA DOS DADOS
  * ============================================================
  */
 
-function criarCardFinanceiro_(
+function dashboardV53ColetarDados_(
+  ss,
+  competencia
+) {
+
+  const ano =
+    competencia.getFullYear();
+
+
+  const mes =
+    competencia.getMonth();
+
+
+  const diasMes =
+    new Date(
+      ano,
+      mes + 1,
+      0
+    ).getDate();
+
+
+  const receitasDia =
+    Array(
+      diasMes
+    ).fill(
+      0
+    );
+
+
+  const despesasDia =
+    Array(
+      diasMes
+    ).fill(
+      0
+    );
+
+
+  const categorias =
+    new Map();
+
+
+  const terceiros =
+    dashboardV53ObterTerceiros_(
+      ss
+    );
+
+
+  let receitasTotal =
+    0;
+
+
+  let fixasTotal =
+    0;
+
+
+  let variaveisTotal =
+    0;
+
+
+  let parcelamentosTotal =
+    0;
+
+
+  /**
+   * RECEITAS
+   */
+
+  const receitasAba =
+    ss.getSheetByName(
+      '💰 Receitas'
+    );
+
+
+  if (
+    receitasAba &&
+    receitasAba.getLastRow() >= 4
+  ) {
+
+    const linhas =
+      receitasAba
+        .getRange(
+          4,
+          1,
+          receitasAba.getLastRow() - 3,
+          4
+        )
+        .getValues();
+
+
+    linhas.forEach(
+      function (linha) {
+
+        const data =
+          dashboardV53Data_(
+            linha[0]
+          );
+
+
+        const valor =
+          dashboardV53Numero_(
+            linha[3]
+          );
+
+
+        if (
+          !data ||
+          !valor ||
+          data.getFullYear() !== ano ||
+          data.getMonth() !== mes
+        ) {
+
+          return;
+
+        }
+
+
+        receitasTotal +=
+          valor;
+
+
+        receitasDia[
+          data.getDate() - 1
+        ] +=
+          valor;
+
+      }
+    );
+
+  }
+
+
+  /**
+   * FIXAS
+   */
+
+  const fixasAba =
+    ss.getSheetByName(
+      '📋 Desp.Fixas'
+    );
+
+
+  if (
+    fixasAba &&
+    fixasAba.getLastRow() >= 6
+  ) {
+
+    const linhas =
+      fixasAba
+        .getRange(
+          6,
+          1,
+          fixasAba.getLastRow() - 5,
+          6
+        )
+        .getValues();
+
+
+    linhas.forEach(
+      function (linha) {
+
+        const categoria =
+          dashboardV53Texto_(
+            linha[0]
+          ) ||
+          'Sem categoria';
+
+
+        const responsavel =
+          dashboardV53Texto_(
+            linha[1]
+          );
+
+
+        const valor =
+          dashboardV53Numero_(
+            linha[4]
+          );
+
+
+        if (
+          !valor ||
+          dashboardV53EhTerceiro_(
+            responsavel,
+            terceiros
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        fixasTotal +=
+          valor;
+
+
+        dashboardV53SomarCategoria_(
+          categorias,
+          categoria,
+          valor
+        );
+
+
+        let dia =
+          parseInt(
+            linha[3],
+            10
+          );
+
+
+        if (
+          !Number.isFinite(
+            dia
+          ) ||
+          dia < 1 ||
+          dia > diasMes
+        ) {
+
+          dia =
+            diasMes;
+
+        }
+
+
+        despesasDia[
+          dia - 1
+        ] +=
+          valor;
+
+      }
+    );
+
+  }
+
+
+  /**
+   * VARIÁVEIS
+   */
+
+  const variaveisAba =
+    ss.getSheetByName(
+      '🛒 Desp.Variáveis'
+    );
+
+
+  if (
+    variaveisAba &&
+    variaveisAba.getLastRow() >= 7
+  ) {
+
+    const linhas =
+      variaveisAba
+        .getRange(
+          7,
+          1,
+          variaveisAba.getLastRow() - 6,
+          7
+        )
+        .getValues();
+
+
+    linhas.forEach(
+      function (linha) {
+
+        const data =
+          dashboardV53Data_(
+            linha[0]
+          );
+
+
+        const categoria =
+          dashboardV53Texto_(
+            linha[1]
+          ) ||
+          'Sem categoria';
+
+
+        const valor =
+          dashboardV53Numero_(
+            linha[3]
+          );
+
+
+        const responsavel =
+          dashboardV53Texto_(
+            linha[6]
+          );
+
+
+        if (
+          !data ||
+          !valor ||
+          data.getFullYear() !== ano ||
+          data.getMonth() !== mes
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          dashboardV53EhTerceiro_(
+            responsavel,
+            terceiros
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        variaveisTotal +=
+          valor;
+
+
+        dashboardV53SomarCategoria_(
+          categorias,
+          categoria,
+          valor
+        );
+
+
+        despesasDia[
+          data.getDate() - 1
+        ] +=
+          valor;
+
+      }
+    );
+
+  }
+
+
+  /**
+   * PARCELAMENTOS
+   */
+
+  const parcelasAba =
+    ss.getSheetByName(
+      '💳 Parcelamentos'
+    );
+
+
+  if (
+    parcelasAba &&
+    parcelasAba.getLastRow() >= 4
+  ) {
+
+    const linhas =
+      parcelasAba
+        .getRange(
+          4,
+          1,
+          parcelasAba.getLastRow() - 3,
+          16
+        )
+        .getValues();
+
+
+    linhas.forEach(
+      function (linha) {
+
+        const categoria =
+          dashboardV53Texto_(
+            linha[0]
+          ) ||
+          'Sem categoria';
+
+
+        const valor =
+          dashboardV53Numero_(
+            linha[6]
+          );
+
+
+        const responsavel =
+          dashboardV53Texto_(
+            linha[8]
+          );
+
+
+        const dataPrimeira =
+          dashboardV53Data_(
+            linha[11]
+          );
+
+
+        const vigente =
+          dashboardV53Texto_(
+            linha[13]
+          ).toLowerCase();
+
+
+        if (
+          vigente !== 'sim' ||
+          !valor ||
+          dashboardV53EhTerceiro_(
+            responsavel,
+            terceiros
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        parcelamentosTotal +=
+          valor;
+
+
+        dashboardV53SomarCategoria_(
+          categorias,
+          categoria,
+          valor
+        );
+
+
+        const dia =
+          dataPrimeira
+            ? Math.min(
+                dataPrimeira.getDate(),
+                diasMes
+              )
+            : diasMes;
+
+
+        despesasDia[
+          dia - 1
+        ] +=
+          valor;
+
+      }
+    );
+
+  }
+
+
+  /**
+   * FLUXO ACUMULADO
+   */
+
+  const fluxo =
+    [];
+
+
+  let receitasAcumuladas =
+    0;
+
+
+  let despesasAcumuladas =
+    0;
+
+
+  for (
+    let dia = 1;
+    dia <= diasMes;
+    dia++
+  ) {
+
+    receitasAcumuladas +=
+      receitasDia[
+        dia - 1
+      ];
+
+
+    despesasAcumuladas +=
+      despesasDia[
+        dia - 1
+      ];
+
+
+    fluxo.push([
+
+      String(
+        dia
+      ).padStart(
+        2,
+        '0'
+      ) +
+      '/' +
+      String(
+        mes + 1
+      ).padStart(
+        2,
+        '0'
+      ),
+
+      receitasAcumuladas,
+
+      despesasAcumuladas
+
+    ]);
+
+  }
+
+
+  /**
+   * TODAS AS CATEGORIAS
+   */
+
+  const categoriasOrdenadas =
+    Array
+      .from(
+        categorias.entries()
+      )
+      .filter(
+        function (item) {
+
+          return (
+            Number(
+              item[1]
+            ) > 0
+          );
+
+        }
+      )
+      .sort(
+        function (a, b) {
+
+          return (
+            b[1] -
+            a[1]
+          );
+
+        }
+      );
+
+
+  const despesasTotal =
+    fixasTotal +
+    variaveisTotal +
+    parcelamentosTotal;
+
+
+  const saldo =
+    receitasTotal -
+    despesasTotal;
+
+
+  const economia =
+    receitasTotal > 0
+      ? saldo /
+        receitasTotal
+      : 0;
+
+
+  return {
+
+    ano:
+      ano,
+
+    mes:
+      mes,
+
+    diasMes:
+      diasMes,
+
+    receitasTotal:
+      receitasTotal,
+
+    fixasTotal:
+      fixasTotal,
+
+    variaveisTotal:
+      variaveisTotal,
+
+    parcelamentosTotal:
+      parcelamentosTotal,
+
+    despesasTotal:
+      despesasTotal,
+
+    saldo:
+      saldo,
+
+    economia:
+      economia,
+
+    fluxo:
+      fluxo,
+
+    categorias:
+      categoriasOrdenadas
+
+  };
+
+}
+
+
+/**
+ * ============================================================
+ * TERCEIROS
+ * ============================================================
+ */
+
+function dashboardV53ObterTerceiros_(
+  ss
+) {
+
+  const resultado =
+    new Set();
+
+
+  const aba =
+    ss.getSheetByName(
+      '_CONFIG'
+    );
+
+
+  if (
+    !aba ||
+    aba.getLastRow() < 2
+  ) {
+
+    return resultado;
+
+  }
+
+
+  aba
+    .getRange(
+      2,
+      1,
+      aba.getLastRow() - 1,
+      2
+    )
+    .getDisplayValues()
+    .forEach(
+      function (linha) {
+
+        const nome =
+          dashboardV53Texto_(
+            linha[0]
+          );
+
+
+        const tipo =
+          dashboardV53Texto_(
+            linha[1]
+          ).toLowerCase();
+
+
+        if (
+          nome &&
+          tipo ===
+            'terceiro / reembolso'
+        ) {
+
+          resultado.add(
+            nome.toLowerCase()
+          );
+
+        }
+
+      }
+    );
+
+
+  return resultado;
+
+}
+
+
+/**
+ * ============================================================
+ * RESPONSÁVEL É TERCEIRO?
+ * ============================================================
+ */
+
+function dashboardV53EhTerceiro_(
+  responsavel,
+  terceiros
+) {
+
+  const texto =
+    dashboardV53Texto_(
+      responsavel
+    ).toLowerCase();
+
+
+  return (
+    texto
+      ? terceiros.has(
+          texto
+        )
+      : false
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * SOMA CATEGORIA
+ * ============================================================
+ */
+
+function dashboardV53SomarCategoria_(
+  mapa,
+  categoria,
+  valor
+) {
+
+  const nome =
+    dashboardV53Texto_(
+      categoria
+    ) ||
+    'Sem categoria';
+
+
+  mapa.set(
+    nome,
+    (
+      mapa.get(
+        nome
+      ) || 0
+    ) +
+    Number(
+      valor || 0
+    )
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * BASE FLUXO
+ * ============================================================
+ */
+
+function dashboardV53EscreverFluxo_(
   aba,
-  intervalo,
-  tituloCelula,
-  valorCelula,
-  titulo,
-  corDestaque,
+  dados
+) {
+
+  aba
+    .getRange('AA1:AC40')
+    .clearContent();
+
+
+  aba
+    .getRange('AA1:AC1')
+    .setValues([[
+      'Data',
+      'Receitas',
+      'Despesas'
+    ]]);
+
+
+  if (
+    !dados.fluxo.length
+  ) {
+
+    return;
+
+  }
+
+
+  aba
+    .getRange(
+      2,
+      27,
+      dados.fluxo.length,
+      3
+    )
+    .setValues(
+      dados.fluxo
+    );
+
+
+  aba
+    .getRange(
+      2,
+      28,
+      dados.fluxo.length,
+      2
+    )
+    .setNumberFormat(
+      '"R$ " #,##0.00'
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * BASE CATEGORIAS
+ * ============================================================
+ */
+
+function dashboardV53EscreverCategorias_(
+  aba,
+  dados
+) {
+
+  aba
+    .getRange('AE1:AF100')
+    .clearContent();
+
+
+  aba
+    .getRange('AE1:AF1')
+    .setValues([[
+      'Categoria',
+      'Valor'
+    ]]);
+
+
+  if (
+    !dados.categorias.length
+  ) {
+
+    return;
+
+  }
+
+
+  aba
+    .getRange(
+      2,
+      31,
+      dados.categorias.length,
+      2
+    )
+    .setValues(
+      dados.categorias
+    );
+
+
+  aba
+    .getRange(
+      2,
+      32,
+      dados.categorias.length,
+      1
+    )
+    .setNumberFormat(
+      '"R$ " #,##0.00'
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * GRÁFICOS
+ * ============================================================
+ */
+
+function dashboardV53CriarGraficos_(
+  aba,
+  dados,
   C
 ) {
 
-  cardBase_(
+  /**
+   * FLUXO
+   */
+
+  if (
+    dados.fluxo.length
+  ) {
+
+    const graficoFluxo =
+      aba
+        .newChart()
+        .setChartType(
+          Charts.ChartType.LINE
+        )
+        .addRange(
+          aba.getRange(
+            'AA1:AC' +
+            (
+              dados.fluxo.length +
+              1
+            )
+          )
+        )
+        .setNumHeaders(
+          1
+        )
+        .setPosition(
+          17,
+          2,
+          0,
+          0
+        )
+        .setOption(
+          'width',
+          590
+        )
+        .setOption(
+          'height',
+          245
+        )
+        .build();
+
+
+    aba.insertChart(
+      graficoFluxo
+    );
+
+  }
+
+
+  /**
+   * CATEGORIAS
+   */
+
+  if (
+    dados.categorias.length
+  ) {
+
+    const graficoCategorias =
+      aba
+        .newChart()
+        .setChartType(
+          Charts.ChartType.PIE
+        )
+        .addRange(
+          aba.getRange(
+            'AE1:AF' +
+            (
+              dados.categorias.length +
+              1
+            )
+          )
+        )
+        .setNumHeaders(
+          1
+        )
+        .setPosition(
+          17,
+          10,
+          0,
+          0
+        )
+        .setOption(
+          'width',
+          380
+        )
+        .setOption(
+          'height',
+          245
+        )
+        .setOption(
+          'pieHole',
+          0.55
+        )
+        .build();
+
+
+    aba.insertChart(
+      graficoCategorias
+    );
+
+  }
+
+}
+
+
+/**
+ * ============================================================
+ * JULIUS DIZ
+ * ============================================================
+ */
+
+function dashboardV53MontarJuliusDiz_(
+  aba,
+  dados,
+  C
+) {
+
+  const receitas =
+    dados.receitasTotal;
+
+
+  const despesas =
+    dados.despesasTotal;
+
+
+  const saldo =
+    dados.saldo;
+
+
+  const economia =
+    dados.economia;
+
+
+  const parcelas =
+    dados.parcelamentosTotal;
+
+
+  let alerta1;
+
+
+  if (
+    receitas > 0 &&
+    despesas > receitas
+  ) {
+
+    alerta1 =
+      '🔴 ATENÇÃO\n' +
+      'As despesas ultrapassaram a receita em ' +
+      dashboardV53Moeda_(
+        despesas -
+        receitas
+      ) +
+      '.';
+
+  } else if (
+    saldo > 0
+  ) {
+
+    alerta1 =
+      '🟢 MÊS POSITIVO\n' +
+      'Você está fechando com ' +
+      dashboardV53Moeda_(
+        saldo
+      ) +
+      ' de saldo.';
+
+  } else {
+
+    alerta1 =
+      '🟠 ATENÇÃO\n' +
+      'Acompanhe o fechamento da competência.';
+
+  }
+
+
+  let alerta2;
+
+
+  if (
+    economia >= 0.20
+  ) {
+
+    alerta2 =
+      '💡 BOA ECONOMIA\n' +
+      dashboardV53Percentual_(
+        economia
+      ) +
+      ' da receita está sendo preservada.';
+
+  } else if (
+    economia >= 0
+  ) {
+
+    alerta2 =
+      '⚠ OLHO NA ECONOMIA\n' +
+      'A reserva do mês está em ' +
+      dashboardV53Percentual_(
+        economia
+      ) +
+      '.';
+
+  } else {
+
+    alerta2 =
+      '⚠ GASTOS ACIMA DA RENDA\n' +
+      'O mês está consumindo mais do que arrecada.';
+
+  }
+
+
+  const pesoParcelas =
+    receitas > 0
+      ? parcelas /
+        receitas
+      : 0;
+
+
+  const alerta3 =
+    pesoParcelas >= 0.40
+      ? '💳 CRÉDITO COMPROMETIDO\n' +
+        'Parcelamentos consomem ' +
+        dashboardV53Percentual_(
+          pesoParcelas
+        ) +
+        ' da receita.'
+      : '💳 PARCELAMENTOS\n' +
+        'Compromisso atual: ' +
+        dashboardV53Moeda_(
+          parcelas
+        ) +
+        '.';
+
+
+  aba
+    .getRange('O16:S23')
+    .clearContent();
+
+
+  dashboardV53Insight_(
+    aba,
+    'O16:S17',
+    alerta1,
+    C.card,
+    saldo < 0
+      ? C.vermelho
+      : C.verdeEscuro
+  );
+
+
+  dashboardV53Insight_(
+    aba,
+    'O18:S19',
+    alerta2,
+    C.card,
+    economia < 0
+      ? C.vermelho
+      : C.caramelo
+  );
+
+
+  dashboardV53Insight_(
+    aba,
+    'O20:S21',
+    alerta3,
+    C.card,
+    C.azulEscuro
+  );
+
+
+  aba
+    .getRange('O22:S23')
+    .merge()
+    .setValue(
+      '“Disciplina é o que faz o mês fechar no azul.”'
+    )
+    .setFontSize(
+      7
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.carameloClaro
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setVerticalAlignment(
+      'middle'
+    )
+    .setWrap(
+      true
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * INSIGHT
+ * ============================================================
+ */
+
+function dashboardV53Insight_(
+  aba,
+  intervalo,
+  texto,
+  fundo,
+  cor
+) {
+
+  aba
+    .getRange(
+      intervalo
+    )
+    .merge()
+    .setValue(
+      texto
+    )
+    .setBackground(
+      fundo
+    )
+    .setFontSize(
+      8
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      cor
+    )
+    .setVerticalAlignment(
+      'middle'
+    )
+    .setWrap(
+      true
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * KPI MOEDA
+ * ============================================================
+ */
+
+function dashboardV53KpiMoeda_(
+  aba,
+  intervalo,
+  titulo,
+  valor,
+  fundo,
+  cor,
+  subtitulo,
+  C
+) {
+
+  const range =
+    aba.getRange(
+      intervalo
+    );
+
+
+  const linha =
+    range.getRow();
+
+
+  const coluna =
+    range.getColumn();
+
+
+  const colunas =
+    range.getNumColumns();
+
+
+  dashboardV53Card_(
+    aba,
+    intervalo,
+    fundo,
+    C.borda
+  );
+
+
+  aba
+    .getRange(
+      linha,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      titulo
+    )
+    .setFontSize(
+      9
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      cor
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  aba
+    .getRange(
+      linha + 1,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      valor
+    )
+    .setFontSize(
+      18
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.marromEscuro
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setNumberFormat(
+      '"R$ " #,##0.00;-"R$ " #,##0.00'
+    );
+
+
+  aba
+    .getRange(
+      linha + 2,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      subtitulo
+    )
+    .setFontSize(
+      7
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * KPI PERCENTUAL
+ * ============================================================
+ */
+
+function dashboardV53KpiPercentual_(
+  aba,
+  intervalo,
+  titulo,
+  valor,
+  fundo,
+  cor,
+  subtitulo,
+  C
+) {
+
+  const range =
+    aba.getRange(
+      intervalo
+    );
+
+
+  const linha =
+    range.getRow();
+
+
+  const coluna =
+    range.getColumn();
+
+
+  const colunas =
+    range.getNumColumns();
+
+
+  dashboardV53Card_(
+    aba,
+    intervalo,
+    fundo,
+    C.borda
+  );
+
+
+  aba
+    .getRange(
+      linha,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      titulo
+    )
+    .setFontSize(
+      9
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      cor
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+
+  aba
+    .getRange(
+      linha + 1,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      valor
+    )
+    .setFontSize(
+      18
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      C.marromEscuro
+    )
+    .setHorizontalAlignment(
+      'center'
+    )
+    .setNumberFormat(
+      '0.0%'
+    );
+
+
+  aba
+    .getRange(
+      linha + 2,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      subtitulo
+    )
+    .setFontSize(
+      7
+    )
+    .setFontStyle(
+      'italic'
+    )
+    .setFontColor(
+      C.textoSecundario
+    )
+    .setHorizontalAlignment(
+      'center'
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * MÓDULO
+ * ============================================================
+ */
+
+function dashboardV53Modulo_(
+  aba,
+  intervalo,
+  titulo,
+  subtitulo,
+  corTitulo,
+  C
+) {
+
+  const range =
+    aba.getRange(
+      intervalo
+    );
+
+
+  const linha =
+    range.getRow();
+
+
+  const coluna =
+    range.getColumn();
+
+
+  const colunas =
+    range.getNumColumns();
+
+
+  dashboardV53Card_(
     aba,
     intervalo,
     C.card,
@@ -798,32 +2591,55 @@ function criarCardFinanceiro_(
 
 
   aba
-    .getRange(tituloCelula)
-    .setValue(titulo)
-    .setFontSize(9)
-    .setFontWeight('bold')
-    .setFontColor(corDestaque);
+    .getRange(
+      linha,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      titulo
+    )
+    .setFontSize(
+      10
+    )
+    .setFontWeight(
+      'bold'
+    )
+    .setFontColor(
+      corTitulo
+    );
 
 
   aba
-    .getRange(valorCelula)
-    .setFontSize(18)
-    .setFontWeight('bold')
-    .setFontColor(C.marromEscuro)
-    .setHorizontalAlignment('center')
-    .setNumberFormat(
-      '"R$ " #,##0.00;-"R$ " #,##0.00'
+    .getRange(
+      linha + 1,
+      coluna,
+      1,
+      colunas
+    )
+    .merge()
+    .setValue(
+      subtitulo
+    )
+    .setFontSize(
+      7
+    )
+    .setFontColor(
+      C.textoSecundario
     );
+
 }
 
 
 /**
  * ============================================================
- * CARD BASE
+ * CARD
  * ============================================================
  */
 
-function cardBase_(
+function dashboardV53Card_(
   aba,
   intervalo,
   fundo,
@@ -831,12 +2647,18 @@ function cardBase_(
 ) {
 
   const range =
-    aba.getRange(intervalo);
+    aba.getRange(
+      intervalo
+    );
 
 
   range
-    .setBackground(fundo)
-    .setVerticalAlignment('middle');
+    .setBackground(
+      fundo
+    )
+    .setVerticalAlignment(
+      'middle'
+    );
 
 
   range.setBorder(
@@ -847,90 +2669,429 @@ function cardBase_(
     false,
     false,
     borda,
-    SpreadsheetApp.BorderStyle.SOLID
+    SpreadsheetApp
+      .BorderStyle
+      .SOLID
   );
+
 }
 
 
 /**
  * ============================================================
- * FLUXO
+ * POSICIONA JULIUS
  * ============================================================
  */
 
-function estilizarFluxoDashboard_(
-  aba,
-  linha,
-  fundo,
-  texto,
-  C
+function dashboardV53PosicionarJulius_(
+  aba
 ) {
 
-  const range =
-    aba.getRange(
-      linha,
-      2,
-      1,
-      11
+  try {
+
+    const imagens =
+      aba.getImages();
+
+
+    if (
+      !imagens ||
+      !imagens.length
+    ) {
+
+      return;
+
+    }
+
+
+    let julius =
+      null;
+
+
+    imagens.forEach(
+      function (imagem) {
+
+        if (julius) {
+
+          return;
+
+        }
+
+
+        let titulo =
+          '';
+
+
+        let descricao =
+          '';
+
+
+        try {
+
+          titulo =
+            String(
+              imagem.getAltTextTitle() ||
+              ''
+            ).toLowerCase();
+
+
+          descricao =
+            String(
+              imagem.getAltTextDescription() ||
+              ''
+            ).toLowerCase();
+
+        } catch (erro) {
+
+        }
+
+
+        if (
+          titulo.includes(
+            'julius'
+          ) ||
+          descricao.includes(
+            'julius'
+          )
+        ) {
+
+          julius =
+            imagem;
+
+        }
+
+      }
     );
 
 
-  range
-    .setBackground(fundo)
-    .setFontColor(texto);
+    if (!julius) {
+
+      julius =
+        imagens[0];
+
+    }
 
 
-  range.setBorder(
-    true,
-    true,
-    true,
-    true,
-    false,
-    false,
-    C.borda,
-    SpreadsheetApp.BorderStyle.SOLID
-  );
+    julius
+      .setAnchorCell(
+        aba.getRange(
+          'L1'
+        )
+      )
+      .setAnchorCellXOffset(
+        8
+      )
+      .setAnchorCellYOffset(
+        1
+      )
+      .setWidth(
+        150
+      )
+      .setHeight(
+        112
+      );
 
 
-  aba
-    .getRange(linha, 2)
-    .setFontWeight(
-      linha === 30
-        ? 'bold'
-        : 'normal'
+  } catch (erro) {
+
+    console.log(
+      'Julius não reposicionado: ' +
+      erro
     );
 
+  }
 
-  aba
-    .getRange(linha, 6)
-    .setFontWeight('bold');
 }
 
 
 /**
  * ============================================================
- * FORMATAÇÃO MOEDA
+ * DESFAZ MESCLAS
  * ============================================================
  */
 
-function formatarMoedaDashboard_(
+function dashboardV53DesfazerMesclas_(
+  aba,
+  intervalo
+) {
+
+  aba
+    .getRange(
+      intervalo
+    )
+    .getMergedRanges()
+    .forEach(
+      function (range) {
+
+        range.breakApart();
+
+      }
+    );
+
+}
+
+
+/**
+ * ============================================================
+ * CONVERTE NÚMERO
+ * ============================================================
+ */
+
+function dashboardV53Numero_(
   valor
 ) {
 
-  const negativo =
-    valor < 0;
+  if (
+    typeof valor ===
+    'number'
+  ) {
+
+    return (
+      Number.isFinite(
+        valor
+      )
+        ? valor
+        : 0
+    );
+
+  }
 
 
-  const absoluto =
-    Math.abs(
-      Number(valor) || 0
+  if (
+    valor === null ||
+    valor === undefined ||
+    valor === ''
+  ) {
+
+    return 0;
+
+  }
+
+
+  let texto =
+    String(
+      valor
+    )
+      .trim()
+      .replace(
+        /R\$/gi,
+        ''
+      )
+      .replace(
+        /\s/g,
+        ''
+      );
+
+
+  if (
+    texto.includes(
+      ','
+    )
+  ) {
+
+    texto =
+      texto
+        .replace(
+          /\./g,
+          ''
+        )
+        .replace(
+          ',',
+          '.'
+        );
+
+  }
+
+
+  const numero =
+    Number(
+      texto
     );
 
 
+  return (
+    Number.isFinite(
+      numero
+    )
+      ? numero
+      : 0
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * CONVERTE DATA
+ * ============================================================
+ */
+
+function dashboardV53Data_(
+  valor
+) {
+
+  if (
+    valor instanceof Date &&
+    !isNaN(
+      valor.getTime()
+    )
+  ) {
+
+    return valor;
+
+  }
+
+
+  if (!valor) {
+
+    return null;
+
+  }
+
+
+  if (
+    typeof valor ===
+    'number'
+  ) {
+
+    const data =
+      new Date(
+        1899,
+        11,
+        30,
+        12,
+        0,
+        0
+      );
+
+
+    data.setDate(
+      data.getDate() +
+      valor
+    );
+
+
+    return (
+      isNaN(
+        data.getTime()
+      )
+        ? null
+        : data
+    );
+
+  }
+
+
   const texto =
-    absoluto
-      .toFixed(2)
-      .replace('.', ',')
+    String(
+      valor
+    ).trim();
+
+
+  const br =
+    texto.match(
+      /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})(?:\s+.*)?$/
+    );
+
+
+  if (br) {
+
+    const data =
+      new Date(
+        Number(
+          br[3]
+        ),
+        Number(
+          br[2]
+        ) - 1,
+        Number(
+          br[1]
+        ),
+        12,
+        0,
+        0
+      );
+
+
+    return (
+      isNaN(
+        data.getTime()
+      )
+        ? null
+        : data
+    );
+
+  }
+
+
+  const data =
+    new Date(
+      texto
+    );
+
+
+  return (
+    isNaN(
+      data.getTime()
+    )
+      ? null
+      : data
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * TEXTO
+ * ============================================================
+ */
+
+function dashboardV53Texto_(
+  valor
+) {
+
+  return String(
+    valor === null ||
+    valor === undefined
+      ? ''
+      : valor
+  ).trim();
+
+}
+
+
+/**
+ * ============================================================
+ * MOEDA
+ * ============================================================
+ */
+
+function dashboardV53Moeda_(
+  valor
+) {
+
+  const numero =
+    Number(
+      valor
+    ) || 0;
+
+
+  const negativo =
+    numero < 0;
+
+
+  const texto =
+    Math
+      .abs(
+        numero
+      )
+      .toFixed(
+        2
+      )
+      .replace(
+        '.',
+        ','
+      )
       .replace(
         /\B(?=(\d{3})+(?!\d))/g,
         '.'
@@ -941,54 +3102,37 @@ function formatarMoedaDashboard_(
     negativo
       ? '-R$ '
       : 'R$ '
-  ) + texto;
+  ) +
+  texto;
+
 }
 
 
 /**
  * ============================================================
- * FORMATAÇÃO PERCENTUAL
+ * PERCENTUAL
  * ============================================================
  */
 
-function formatarPercentualDashboard_(
+function dashboardV53Percentual_(
   valor
 ) {
 
   return (
-    (Number(valor) * 100)
-      .toFixed(1)
-      .replace('.', ',') +
+    (
+      Number(
+        valor
+      ) *
+      100
+    )
+      .toFixed(
+        1
+      )
+      .replace(
+        '.',
+        ','
+      ) +
     '%'
   );
-}
 
-
-/**
- * ============================================================
- * COLUNA → NÚMERO
- * ============================================================
- */
-
-function colunaParaNumeroDashboard_(
-  coluna
-) {
-
-  let numero = 0;
-
-
-  for (
-    let i = 0;
-    i < coluna.length;
-    i++
-  ) {
-
-    numero =
-      numero * 26 +
-      coluna.charCodeAt(i) -
-      64;
-  }
-
-
-  return numero;
 }

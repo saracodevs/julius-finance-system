@@ -10,31 +10,14 @@
  * à competência selecionada em 📊 Dashboard!B7.
  *
  * Nada é apagado.
- *
- * Execute manualmente:
- * aplicarVisaoCompetenciaAtualReembolsos()
- *
- * Depois vamos integrar ao sistema automaticamente.
  */
 
-
 const REEMB_FILTRO_CONFIG = {
-
-  ABA:
-    '💸 Reembolsos',
-
-  DASHBOARD:
-    '📊 Dashboard',
-
-  CELULA_COMPETENCIA:
-    'B7',
-
-  PRIMEIRA_LINHA:
-    5,
-
-  COLUNA_COMPETENCIA:
-    10 // J
-
+  ABA: '💸 Reembolsos',
+  DASHBOARD: '📊 Dashboard',
+  CELULA_COMPETENCIA: 'B7',
+  PRIMEIRA_LINHA: 5,
+  COLUNA_COMPETENCIA: 10 // J
 };
 
 
@@ -49,187 +32,161 @@ function aplicarVisaoCompetenciaAtualReembolsos() {
   const ss =
     SpreadsheetApp.getActiveSpreadsheet();
 
-
   const aba =
     ss.getSheetByName(
       REEMB_FILTRO_CONFIG.ABA
     );
-
 
   const dashboard =
     ss.getSheetByName(
       REEMB_FILTRO_CONFIG.DASHBOARD
     );
 
-
-  if (
-    !aba ||
-    !dashboard
-  ) {
-
+  if (!aba || !dashboard) {
     throw new Error(
       'Não foi possível encontrar Dashboard ou Reembolsos.'
     );
-
   }
-
-
-  const competencia =
-    dashboard
-      .getRange(
-        REEMB_FILTRO_CONFIG.CELULA_COMPETENCIA
-      )
-      .getValue();
-
-
-  if (
-    !(competencia instanceof Date) ||
-    isNaN(
-      competencia.getTime()
-    )
-  ) {
-
-    throw new Error(
-      '📊 Dashboard!B7 não contém uma competência válida.'
-    );
-
-  }
-
-
-  const ultimaLinha =
-    aba.getLastRow();
 
 
   /**
-   * Primeiro mostra todas as linhas.
-   *
-   * Isso é importante quando mudamos:
-   * agosto -> julho -> agosto.
+   * ==========================================================
+   * COMPETÊNCIA SELECIONADA NO DASHBOARD
+   * ==========================================================
    */
 
-  if (
-    ultimaLinha >=
-    REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA
-  ) {
-
-    aba.showRows(
-      REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA,
-      ultimaLinha -
-        REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA +
-        1
+  const rangeCompetencia =
+    dashboard.getRange(
+      REEMB_FILTRO_CONFIG.CELULA_COMPETENCIA
     );
 
+  const competenciaValor =
+    rangeCompetencia.getValue();
+
+  const competenciaTexto =
+    rangeCompetencia.getDisplayValue();
+
+  const competenciaSelecionada =
+    extrairAnoMesReembolsoFiltro_(
+      competenciaValor,
+      competenciaTexto
+    );
+
+  if (!competenciaSelecionada) {
+    throw new Error(
+      '📊 Dashboard!B7 não contém uma competência válida.'
+    );
   }
 
+
+  /**
+   * ==========================================================
+   * LINHAS DA ABA
+   * ==========================================================
+   */
+
+  const ultimaLinha =
+    aba.getLastRow();
 
   if (
     ultimaLinha <
     REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA
   ) {
-
     return;
-
   }
 
 
+  const quantidadeLinhas =
+    ultimaLinha -
+    REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA +
+    1;
+
+
   /**
-   * Lê somente a coluna técnica J.
+   * Primeiro mostra todas.
+   *
+   * Isso garante funcionamento correto ao navegar:
+   * agosto -> setembro -> agosto.
    */
 
-  const competencias =
-    aba
-      .getRange(
-        REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA,
-        REEMB_FILTRO_CONFIG.COLUNA_COMPETENCIA,
-        ultimaLinha -
-          REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA +
-          1,
-        1
-      )
-      .getValues();
-
-
-  const anoSelecionado =
-    competencia.getFullYear();
-
-
-  const mesSelecionado =
-    competencia.getMonth();
+  aba.showRows(
+    REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA,
+    quantidadeLinhas
+  );
 
 
   /**
    * ==========================================================
-   * ENCONTRA BLOCOS QUE DEVEM SER OCULTADOS
+   * LÊ A COMPETÊNCIA TÉCNICA — COLUNA J
    * ==========================================================
    *
-   * Em vez de chamar hideRows linha por linha,
-   * agrupamos sequências para ficar rápido.
+   * Pegamos tanto o valor real quanto o texto exibido.
+   *
+   * Assim funciona mesmo se J estiver:
+   *
+   * Date
+   * 08/2026
+   * 01/08/2026
+   * agosto/2026
    */
 
-  let inicioBloco =
-    null;
+  const rangeCompetencias =
+    aba.getRange(
+      REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA,
+      REEMB_FILTRO_CONFIG.COLUNA_COMPETENCIA,
+      quantidadeLinhas,
+      1
+    );
+
+  const valores =
+    rangeCompetencias.getValues();
+
+  const textos =
+    rangeCompetencias.getDisplayValues();
 
 
-  let tamanhoBloco =
-    0;
+  /**
+   * ==========================================================
+   * IDENTIFICA BLOCOS A OCULTAR
+   * ==========================================================
+   */
 
+  let inicioBloco = null;
+  let tamanhoBloco = 0;
 
   for (
     let i = 0;
-    i < competencias.length;
+    i < quantidadeLinhas;
     i++
   ) {
 
-    const valor =
-      competencias[i][0];
+    const competenciaLinha =
+      extrairAnoMesReembolsoFiltro_(
+        valores[i][0],
+        textos[i][0]
+      );
 
+    const pertenceAoMes =
+      competenciaLinha !== null &&
+      competenciaLinha.ano ===
+        competenciaSelecionada.ano &&
+      competenciaLinha.mes ===
+        competenciaSelecionada.mes;
 
-    let pertenceAoMes =
-      false;
-
-
-    if (
-      valor instanceof Date &&
-      !isNaN(
-        valor.getTime()
-      )
-    ) {
-
-      pertenceAoMes =
-        (
-          valor.getFullYear() ===
-          anoSelecionado
-        ) &&
-        (
-          valor.getMonth() ===
-          mesSelecionado
-        );
-
-    }
-
-
-    /**
-     * Linha física na planilha.
-     */
 
     const linhaPlanilha =
       REEMB_FILTRO_CONFIG.PRIMEIRA_LINHA +
       i;
 
 
-    if (
-      !pertenceAoMes
-    ) {
+    if (!pertenceAoMes) {
 
-      if (
-        inicioBloco === null
-      ) {
+      if (inicioBloco === null) {
 
         inicioBloco =
           linhaPlanilha;
 
-        tamanhoBloco =
-          1;
+        tamanhoBloco = 1;
 
       } else {
 
@@ -239,26 +196,15 @@ function aplicarVisaoCompetenciaAtualReembolsos() {
 
     } else {
 
-      /**
-       * Encontramos uma linha visível.
-       * Fecha o bloco anterior.
-       */
-
-      if (
-        inicioBloco !== null
-      ) {
+      if (inicioBloco !== null) {
 
         aba.hideRows(
           inicioBloco,
           tamanhoBloco
         );
 
-
-        inicioBloco =
-          null;
-
-        tamanhoBloco =
-          0;
+        inicioBloco = null;
+        tamanhoBloco = 0;
 
       }
 
@@ -268,12 +214,10 @@ function aplicarVisaoCompetenciaAtualReembolsos() {
 
 
   /**
-   * Pode ter sobrado bloco no final.
+   * Fecha eventual bloco final.
    */
 
-  if (
-    inicioBloco !== null
-  ) {
+  if (inicioBloco !== null) {
 
     aba.hideRows(
       inicioBloco,
@@ -288,8 +232,9 @@ function aplicarVisaoCompetenciaAtualReembolsos() {
 
   ss.toast(
     'Reembolsos exibindo ' +
-      formatarMesAnoReembolsosFiltro_(
-        competencia
+      formatarMesAnoReembolsosFiltroPorPartes_(
+        competenciaSelecionada.ano,
+        competenciaSelecionada.mes
       ) +
       ' 👁️',
     'Julius Finance',
@@ -301,14 +246,226 @@ function aplicarVisaoCompetenciaAtualReembolsos() {
 
 /**
  * ============================================================
- * 👁️ MOSTRAR TODAS AS DÍVIDAS
+ * 🧠 INTERPRETA QUALQUER FORMATO DE COMPETÊNCIA
  * ============================================================
  *
- * Vamos usar esta função mais tarde no seletor:
+ * Retorna:
  *
- * Competência atual
- * Todos os pendentes
- * Histórico completo
+ * {
+ *   ano: 2026,
+ *   mes: 8
+ * }
+ *
+ * O mês aqui vai de 1 a 12.
+ */
+
+function extrairAnoMesReembolsoFiltro_(
+  valor,
+  texto
+) {
+
+  /**
+   * ----------------------------------------------------------
+   * 1. DATA REAL
+   * ----------------------------------------------------------
+   */
+
+  if (
+    valor instanceof Date &&
+    !isNaN(valor.getTime())
+  ) {
+
+    return {
+      ano: valor.getFullYear(),
+      mes: valor.getMonth() + 1
+    };
+
+  }
+
+
+  /**
+   * ----------------------------------------------------------
+   * 2. TEXTO
+   * ----------------------------------------------------------
+   */
+
+  const bruto =
+    String(
+      texto ||
+      valor ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (!bruto) {
+    return null;
+  }
+
+
+  /**
+   * ----------------------------------------------------------
+   * mm/yyyy
+   * ----------------------------------------------------------
+   */
+
+  let match =
+    bruto.match(
+      /^(\d{1,2})\/(\d{4})$/
+    );
+
+  if (match) {
+
+    const mes =
+      Number(match[1]);
+
+    const ano =
+      Number(match[2]);
+
+    if (
+      mes >= 1 &&
+      mes <= 12
+    ) {
+
+      return {
+        ano: ano,
+        mes: mes
+      };
+
+    }
+
+  }
+
+
+  /**
+   * ----------------------------------------------------------
+   * dd/mm/yyyy
+   * ----------------------------------------------------------
+   */
+
+  match =
+    bruto.match(
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+    );
+
+  if (match) {
+
+    const mes =
+      Number(match[2]);
+
+    const ano =
+      Number(match[3]);
+
+    if (
+      mes >= 1 &&
+      mes <= 12
+    ) {
+
+      return {
+        ano: ano,
+        mes: mes
+      };
+
+    }
+
+  }
+
+
+  /**
+   * ----------------------------------------------------------
+   * yyyy-mm-dd
+   * ----------------------------------------------------------
+   */
+
+  match =
+    bruto.match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})/
+    );
+
+  if (match) {
+
+    const ano =
+      Number(match[1]);
+
+    const mes =
+      Number(match[2]);
+
+    if (
+      mes >= 1 &&
+      mes <= 12
+    ) {
+
+      return {
+        ano: ano,
+        mes: mes
+      };
+
+    }
+
+  }
+
+
+  /**
+   * ----------------------------------------------------------
+   * nome-do-mês/ano
+   * ----------------------------------------------------------
+   */
+
+  const meses = {
+    janeiro: 1,
+    fevereiro: 2,
+    marco: 3,
+    março: 3,
+    abril: 4,
+    maio: 5,
+    junho: 6,
+    julho: 7,
+    agosto: 8,
+    setembro: 9,
+    outubro: 10,
+    novembro: 11,
+    dezembro: 12
+  };
+
+
+  match =
+    bruto.match(
+      /^([a-záéíóúâêôãõç]+)\s*\/\s*(\d{4})$/i
+    );
+
+  if (match) {
+
+    const nomeMes =
+      match[1];
+
+    const ano =
+      Number(match[2]);
+
+    const mes =
+      meses[nomeMes];
+
+    if (mes) {
+
+      return {
+        ano: ano,
+        mes: mes
+      };
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/**
+ * ============================================================
+ * 👁️ MOSTRAR TODAS AS DÍVIDAS
+ * ============================================================
  */
 
 function mostrarTodosReembolsos() {
@@ -316,12 +473,10 @@ function mostrarTodosReembolsos() {
   const ss =
     SpreadsheetApp.getActiveSpreadsheet();
 
-
   const aba =
     ss.getSheetByName(
       REEMB_FILTRO_CONFIG.ABA
     );
-
 
   if (!aba) {
     return;
@@ -330,7 +485,6 @@ function mostrarTodosReembolsos() {
 
   const ultimaLinha =
     aba.getLastRow();
-
 
   if (
     ultimaLinha >=
@@ -362,6 +516,33 @@ function formatarMesAnoReembolsosFiltro_(
   data
 ) {
 
+  if (
+    !(data instanceof Date) ||
+    isNaN(data.getTime())
+  ) {
+    return '';
+  }
+
+
+  return formatarMesAnoReembolsosFiltroPorPartes_(
+    data.getFullYear(),
+    data.getMonth() + 1
+  );
+
+}
+
+
+/**
+ * ============================================================
+ * 📅 TEXTO DA COMPETÊNCIA POR ANO/MÊS
+ * ============================================================
+ */
+
+function formatarMesAnoReembolsosFiltroPorPartes_(
+  ano,
+  mes
+) {
+
   const meses = [
     'janeiro',
     'fevereiro',
@@ -379,11 +560,9 @@ function formatarMesAnoReembolsosFiltro_(
 
 
   return (
-    meses[
-      data.getMonth()
-    ] +
+    meses[mes - 1] +
     '/' +
-    data.getFullYear()
+    ano
   );
 
 }

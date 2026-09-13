@@ -33,7 +33,6 @@ function onOpen() {
 
   prepararConfiguracoes_();
 
-
   SpreadsheetApp
     .getUi()
 
@@ -49,6 +48,13 @@ function onOpen() {
     .addItem(
       '📄 Importar Fatura PDF',
       'abrirImportarFatura'
+    )
+
+    .addSeparator()
+
+    .addItem(
+      '💵 Registrar Pagamento',
+      'abrirRegistrarPagamentoReembolso'
     )
 
     .addSeparator()

@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * 💸 REEMBOLSOS VISUAL V2 — JULIUS FINANCE SYSTEM
+ * 💸 REEMBOLSOS VISUAL V3 — JULIUS FINANCE SYSTEM
  * ============================================================
  *
  * Execute somente:
@@ -10,18 +10,25 @@
  * - Não altera dados A:I
  * - Não altera fórmulas G/H
  * - J:L permanecem ocultas
- * - F continua sendo Valor Pago manual
+ * - F = Valor Pago calculado pelas alocações
+ * - Cards seguem a competência de 📊 Dashboard!B7
  */
 
 function montarReembolsosVisual() {
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const aba = ss.getSheetByName('💸 Reembolsos');
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  const aba =
+    ss.getSheetByName('💸 Reembolsos');
+
 
   if (!aba) {
+
     throw new Error(
       'A aba 💸 Reembolsos não foi encontrada.'
     );
+
   }
 
 
@@ -70,6 +77,7 @@ function montarReembolsosVisual() {
       aba.getLastRow(),
       5
     );
+
 
   const maxLinhas =
     aba.getMaxRows();
@@ -158,12 +166,6 @@ function montarReembolsosVisual() {
    * ==========================================================
    * 🧹 PREPARAÇÃO SEGURA DOS CARDS
    * ==========================================================
-   *
-   * CORREÇÃO DO ERRO:
-   *
-   * Em vez de chamar breakApart() diretamente em A2:I3,
-   * primeiro localizamos cada mesclagem existente e
-   * desfazemos o intervalo completo dela.
    */
 
   reembVDesfazerMesclasNaArea_(
@@ -181,7 +183,7 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
-   * 💰 TOTAL A RECEBER
+   * 💰 TOTAL A RECEBER — COMPETÊNCIA ATUAL
    * ==========================================================
    */
 
@@ -202,8 +204,10 @@ function montarReembolsosVisual() {
     .getRange('A2')
     .setFormula(
       '="💰 TOTAL A RECEBER"&CHAR(10)&' +
-      'TEXT(IFERROR(SUM(E5:E' +
-      ultimaLinha +
+      'TEXT(IFERROR(SUMIFS(' +
+      'E5:E' + ultimaLinha + ';' +
+      'J5:J' + ultimaLinha + ';">="&EOMONTH(\'📊 Dashboard\'!B7;-1)+1;' +
+      'J5:J' + ultimaLinha + ';"<="&EOMONTH(\'📊 Dashboard\'!B7;0)' +
       ');0);"R$ #,##0.00")'
     )
     .setFontSize(11)
@@ -216,7 +220,7 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
-   * ✅ JÁ RECEBIDO
+   * ✅ JÁ RECEBIDO — COMPETÊNCIA ATUAL
    * ==========================================================
    */
 
@@ -237,8 +241,10 @@ function montarReembolsosVisual() {
     .getRange('C2')
     .setFormula(
       '="✅ JÁ RECEBIDO"&CHAR(10)&' +
-      'TEXT(IFERROR(SUM(F5:F' +
-      ultimaLinha +
+      'TEXT(IFERROR(SUMIFS(' +
+      'F5:F' + ultimaLinha + ';' +
+      'J5:J' + ultimaLinha + ';">="&EOMONTH(\'📊 Dashboard\'!B7;-1)+1;' +
+      'J5:J' + ultimaLinha + ';"<="&EOMONTH(\'📊 Dashboard\'!B7;0)' +
       ');0);"R$ #,##0.00")'
     )
     .setFontSize(11)
@@ -251,7 +257,7 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
-   * 🔴 SALDO PENDENTE
+   * 🔴 SALDO PENDENTE — COMPETÊNCIA ATUAL
    * ==========================================================
    */
 
@@ -272,8 +278,10 @@ function montarReembolsosVisual() {
     .getRange('E2')
     .setFormula(
       '="🔴 SALDO PENDENTE"&CHAR(10)&' +
-      'TEXT(IFERROR(SUM(G5:G' +
-      ultimaLinha +
+      'TEXT(IFERROR(SUMIFS(' +
+      'G5:G' + ultimaLinha + ';' +
+      'J5:J' + ultimaLinha + ';">="&EOMONTH(\'📊 Dashboard\'!B7;-1)+1;' +
+      'J5:J' + ultimaLinha + ';"<="&EOMONTH(\'📊 Dashboard\'!B7;0)' +
       ');0);"R$ #,##0.00")'
     )
     .setFontSize(11)
@@ -286,7 +294,7 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
-   * 👀 PENDÊNCIAS
+   * 👀 PENDÊNCIAS — COMPETÊNCIA ATUAL
    * ==========================================================
    */
 
@@ -307,9 +315,11 @@ function montarReembolsosVisual() {
     .getRange('G2')
     .setFormula(
       '="👀 PENDÊNCIAS"&CHAR(10)&' +
-      'COUNTIF(G5:G' +
-      ultimaLinha +
-      ';">0")&" lançamentos"'
+      'COUNTIFS(' +
+      'J5:J' + ultimaLinha + ';">="&EOMONTH(\'📊 Dashboard\'!B7;-1)+1;' +
+      'J5:J' + ultimaLinha + ';"<="&EOMONTH(\'📊 Dashboard\'!B7;0);' +
+      'G5:G' + ultimaLinha + ';">0"' +
+      ')&" lançamentos"'
     )
     .setFontSize(11)
     .setFontWeight('bold')
@@ -460,8 +470,11 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
-   * ✏️ VALOR PAGO
+   * ✅ VALOR PAGO
    * ==========================================================
+   *
+   * O valor da coluna F é calculado pelo sistema de pagamentos
+   * e alocações. Não deve ser preenchido manualmente.
    */
 
   aba
@@ -471,7 +484,6 @@ function montarReembolsosVisual() {
       quantidadeLinhas,
       1
     )
-    .setBackground(C.editavel)
     .setFontWeight('bold')
     .setFontColor(C.marromEscuro);
 
@@ -608,7 +620,7 @@ function montarReembolsosVisual() {
   aba
     .getRange('F4')
     .setNote(
-      'Campo manual: informe aqui quanto já foi recebido referente a este lançamento.'
+      'Valor calculado automaticamente a partir dos pagamentos registrados em 💵 Pagamentos Reembolsos.'
     );
 
 
@@ -651,6 +663,33 @@ function montarReembolsosVisual() {
 
   /**
    * ==========================================================
+   * 👁️ VISÃO DA COMPETÊNCIA
+   * ==========================================================
+   */
+
+  try {
+
+    if (
+      typeof aplicarVisaoCompetenciaAtualReembolsos ===
+      'function'
+    ) {
+
+      aplicarVisaoCompetenciaAtualReembolsos();
+
+    }
+
+  } catch (erroFiltro) {
+
+    console.log(
+      'Visão da competência não reaplicada: ' +
+      erroFiltro
+    );
+
+  }
+
+
+  /**
+   * ==========================================================
    * ✅ FINAL
    * ==========================================================
    */
@@ -659,7 +698,7 @@ function montarReembolsosVisual() {
 
 
   ss.toast(
-    'Reembolsos Julius V2 aplicados 💸👀',
+    'Reembolsos Julius V3 aplicados 💸👀',
     'Controle Financeiro',
     4
   );
@@ -686,11 +725,13 @@ function reembVDesfazerMesclasNaArea_(
     area.getMergedRanges();
 
 
-  mesclagens.forEach(range => {
+  mesclagens.forEach(
+    range => {
 
-    range.breakApart();
+      range.breakApart();
 
-  });
+    }
+  );
 
 }
 
@@ -742,20 +783,24 @@ function reembVFormatacaoCondicional_(
 
 
   const preservadas =
-    regrasAtuais.filter(regra => {
+    regrasAtuais.filter(
+      regra => {
 
-      return !regra
-        .getRanges()
-        .some(range => {
+        return !regra
+          .getRanges()
+          .some(
+            range => {
 
-          return (
-            range.getColumn() === 8 &&
-            range.getRow() >= 5
+              return (
+                range.getColumn() === 8 &&
+                range.getRow() >= 5
+              );
+
+            }
           );
 
-        });
-
-    });
+      }
+    );
 
 
   const novas = [];
@@ -849,7 +894,9 @@ function reembVFormatacaoCondicional_(
 
 
   aba.setConditionalFormatRules(
-    preservadas.concat(novas)
+    preservadas.concat(
+      novas
+    )
   );
 
 }

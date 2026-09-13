@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top" />
+
+  <style>
+    :root {
+      --fundo: #f1e4cf;
+      --card: #fff8ec;
+      --azul: #286173;
+      --azul-escuro: #194754;
+      --caramelo: #c78342;
+      --texto: #33291f;
+      --texto-secundario: #786554;
+      --borda: #c3a989;
+      --sucesso: #668348;
+      --erro: #b9553d;
+      --branco: #fff9f0;
+      --info: #d8e8eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: var(--fundo);
+      color: var(--texto);
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--azul);
+      color: var(--branco);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .header h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .campo {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 11px 12px;
+      background: var(--branco);
+      color: var(--texto);
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--azul);
+      box-shadow: 0 0 0 2px rgba(40, 97, 115, 0.12);
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .competencia-info {
+      display: none;
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--info);
+      color: var(--azul-escuro);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-cancelar {
+      background: #e8dcc8;
+      color: var(--texto);
+    }
+
+    .btn-salvar {
+      background: var(--azul);
+      color: var(--branco);
+    }
+
+    .btn-salvar:hover {
+      background: var(--azul-escuro);
+    }
+
+    .btn-cancelar:hover {
+      background: #d9c9ae;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: none;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .status.sucesso {
+      display: block;
+      background: #e1e8d2;
+      color: var(--sucesso);
+    }
+
+    .status.erro {
+      display: block;
+      background: #f2d5cc;
+      color: var(--erro);
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .info {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--texto-secundario);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="header">
+      <h1>💵 Registrar Pagamento</h1>
+      <p>
+        Informe o valor recebido e escolha a competência
+        que deseja quitar.
+      </p>
+    </div>
+
+    <div class="card" id="formCard">
+
+      <div class="campo">
+        <label for="data">Data do recebimento</label>
+        <input type="date" id="data" />
+      </div>
+
+      <div class="campo">
+        <label for="responsavel">Responsável</label>
+
+        <select id="responsavel" onchange="carregarCompetencias()">
+          <option value="">Carregando responsáveis...</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="competencia">
+          Competência que deseja pagar
+        </label>
+
+        <select id="competencia" disabled>
+          <option value="">
+            Selecione primeiro o responsável
+          </option>
+        </select>
+
+        <div
+          class="competencia-info"
+          id="competenciaInfo"
+        >
+          O valor será distribuído somente entre as dívidas
+          pendentes da competência escolhida, começando pela
+          mais antiga daquele mês.
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="valor">Valor recebido</label>
+
+        <input
+          type="number"
+          id="valor"
+          min="0.01"
+          step="0.01"
+          placeholder="0,00"
+        />
+      </div>
+
+      <div class="campo">
+        <label for="forma">Forma de pagamento</label>
+
+        <select id="forma">
+          <option value="">Selecione</option>
+          <option value="PIX">PIX</option>
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="Débito">Débito</option>
+          <option value="Crédito">Crédito</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="observacao">Observação</label>
+
+        <textarea
+          id="observacao"
+          placeholder="Ex.: pagamento parcial referente aos valores pendentes"
+        ></textarea>
+      </div>
+
+      <div class="acoes">
+
+        <button
+          class="btn-cancelar"
+          type="button"
+          onclick="google.script.host.close()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn-salvar"
+          type="button"
+          onclick="salvarPagamento()"
+        >
+          Registrar pagamento
+        </button>
+
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div class="info">
+        O sistema distribuirá o pagamento somente entre os
+        reembolsos pendentes da competência escolhida.
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function () {
+
+        preencherDataHoje();
+
+        google.script.run
+          .withSuccessHandler(carregarResponsaveis)
+          .withFailureHandler(mostrarErro)
+          .listarResponsaveisReembolso();
+
+      }
+    );
+
+
+    function preencherDataHoje() {
+
+      const hoje = new Date();
+
+      const ano =
+        hoje.getFullYear();
+
+      const mes =
+        String(
+          hoje.getMonth() + 1
+        ).padStart(
+          2,
+          '0'
+        );
+
+      const dia =
+        String(
+          hoje.getDate()
+        ).padStart(
+          2,
+          '0'
+        );
+
+      document
+        .getElementById('data')
+        .value =
+          `${ano}-${mes}-${dia}`;
+
+    }
+
+
+    function carregarResponsaveis(lista) {
+
+      const select =
+        document.getElementById(
+          'responsavel'
+        );
+
+      select.innerHTML =
+        '<option value="">Selecione</option>';
+
+      (lista || []).forEach(
+        function (nome) {
+
+          const option =
+            document.createElement(
+              'option'
+            );
+
+          option.value =
+            nome;
+
+          option.textContent =
+            nome;
+
+          select.appendChild(
+            option
+          );
+
+        }
+      );
+
+    }
+
+
+    function carregarCompetencias() {
+
+      limparStatus();
+
+      const responsavel =
+        document
+          .getElementById(
+            'responsavel'
+          )
+          .value;
+
+      const select =
+        document
+          .getElementById(
+            'competencia'
+          );
+
+      const info =
+        document
+          .getElementById(
+            'competenciaInfo'
+          );
+
+      info.style.display =
+        'none';
+
+      if (!responsavel) {
+
+        select.disabled =
+          true;
+
+        select.innerHTML =
+          '<option value="">Selecione primeiro o responsável</option>';
+
+        return;
+
+      }
+
+      select.disabled =
+        true;
+
+      select.innerHTML =
+        '<option value="">Carregando competências...</option>';
+
+      google.script.run
+        .withSuccessHandler(
+          function (competencias) {
+
+            select.innerHTML =
+              '<option value="">Selecione</option>';
+
+            if (
+              !competencias ||
+              !competencias.length
+            ) {
+
+              select.innerHTML =
+                '<option value="">Nenhuma competência pendente</option>';
+
+              select.disabled =
+                true;
+
+              return;
+
+            }
+
+            competencias.forEach(
+              function (item) {
+
+                const option =
+                  document.createElement(
+                    'option'
+                  );
+
+                option.value =
+                  item.valor;
+
+                option.textContent =
+                  item.rotulo;
+
+                select.appendChild(
+                  option
+                );
+
+              }
+            );
+
+            select.disabled =
+              false;
+
+            info.style.display =
+              'block';
+
+          }
+        )
+        .withFailureHandler(
+          mostrarErro
+        )
+        .listarCompetenciasPendentesReembolso(
+          responsavel
+        );
+
+    }
+
+
+    function salvarPagamento() {
+
+      limparStatus();
+
+      const dados = {
+
+        data:
+          document
+            .getElementById(
+              'data'
+            )
+            .value,
+
+        responsavel:
+          document
+            .getElementById(
+              'responsavel'
+            )
+            .value,
+
+        competencia:
+          document
+            .getElementById(
+              'competencia'
+            )
+            .value,
+
+        valor:
+          Number(
+            document
+              .getElementById(
+                'valor'
+              )
+              .value || 0
+          ),
+
+        forma:
+          document
+            .getElementById(
+              'forma'
+            )
+            .value,
+
+        observacao:
+          document
+            .getElementById(
+              'observacao'
+            )
+            .value
+            .trim()
+
+      };
+
+
+      if (!dados.data) {
+
+        mostrarErro(
+          'Informe a data do recebimento.'
+        );
+
+        return;
+
+      }
+
+
+      if (!dados.responsavel) {
+
+        mostrarErro(
+          'Selecione o responsável.'
+        );
+
+        return;
+
+      }
+
+
+      if (!dados.competencia) {
+
+        mostrarErro(
+          'Selecione a competência que deseja pagar.'
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !dados.valor ||
+        dados.valor <= 0
+      ) {
+
+        mostrarErro(
+          'Informe um valor maior que zero.'
+        );
+
+        return;
+
+      }
+
+
+      if (!dados.forma) {
+
+        mostrarErro(
+          'Selecione a forma de pagamento.'
+        );
+
+        return;
+
+      }
+
+
+      bloquearFormulario(
+        true
+      );
+
+
+      google.script.run
+        .withSuccessHandler(
+          function (resultado) {
+
+            mostrarSucesso(
+              resultado &&
+              resultado.mensagem
+                ? resultado.mensagem
+                : 'Pagamento registrado com sucesso.'
+            );
+
+            setTimeout(
+              function () {
+
+                google.script.host.close();
+
+              },
+              1400
+            );
+
+          }
+        )
+        .withFailureHandler(
+          function (erro) {
+
+            bloquearFormulario(
+              false
+            );
+
+            mostrarErro(
+              erro &&
+              erro.message
+                ? erro.message
+                : 'Não foi possível registrar o pagamento.'
+            );
+
+          }
+        )
+        .registrarPagamentoReembolso(
+          dados
+        );
+
+    }
+
+
+    function bloquearFormulario(
+      bloquear
+    ) {
+
+      const card =
+        document.getElementById(
+          'formCard'
+        );
+
+      if (bloquear) {
+
+        card.classList.add(
+          'loading'
+        );
+
+      } else {
+
+        card.classList.remove(
+          'loading'
+        );
+
+      }
+
+    }
+
+
+    function mostrarSucesso(
+      mensagem
+    ) {
+
+      const status =
+        document.getElementById(
+          'status'
+        );
+
+      status.className =
+        'status sucesso';
+
+      status.textContent =
+        mensagem;
+
+    }
+
+
+    function mostrarErro(
+      erro
+    ) {
+
+      bloquearFormulario(
+        false
+      );
+
+      const mensagem =
+        typeof erro ===
+          'string'
+          ? erro
+          : erro &&
+            erro.message
+            ? erro.message
+            : 'Ocorreu um erro.';
+
+      const status =
+        document.getElementById(
+          'status'
+        );
+
+      status.className =
+        'status erro';
+
+      status.textContent =
+        mensagem;
+
+    }
+
+
+    function limparStatus() {
+
+      const status =
+        document.getElementById(
+          'status'
+        );
+
+      status.className =
+        'status';
+
+      status.textContent =
+        '';
+
+    }
+
+  </script>
+</body>
+
+</html>
